@@ -4,18 +4,12 @@ import java.util.List;
 
 import com.hbm.main.MainRegistry;
 import com.hbm.util.I18nUtil;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.PropertyInteger;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
 
 public class BlockBase extends Block {
 	
@@ -39,7 +33,7 @@ public class BlockBase extends Block {
 	}
 	
 	@Override
-	public void addInformation(ItemStack stack, World player, List<String> list, ITooltipFlag advanced) {
+	public void addInformation(ItemStack stack, Level player, List<String> list, ITooltipFlag advanced) {
 		if(stack.getItem() == Item.getItemFromBlock(ModBlocks.meteor_battery)){
 			list.add(I18nUtil.resolveKey("desc.teslacoils"));
 		}

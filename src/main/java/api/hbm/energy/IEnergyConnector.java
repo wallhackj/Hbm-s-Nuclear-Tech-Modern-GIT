@@ -4,12 +4,10 @@ import com.hbm.packet.AuxParticlePacketNT;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.lib.ForgeDirection;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
 /**
  * For anything that connects to power and can be transferred power to, the bottom-level interface.
@@ -54,13 +52,12 @@ public interface IEnergyConnector extends ILoadedTile {
 	/**
 	 * Basic implementation of subscribing to a nearby power grid
 	 * @param world
-	 * @param x
-	 * @param y
-	 * @param z
+	 * @param dir
+	 * @param pos
 	 */
-	public default void trySubscribe(World world, BlockPos pos, ForgeDirection dir) {
+	public default void trySubscribe(Level world, BlockPos pos, ForgeDirection dir) {
 
-		TileEntity te = world.getTileEntity(pos);
+		BlockEntity te = world.getBlockEntity(pos);
 		boolean red = false;
 		
 		if(te instanceof IEnergyConductor) {
@@ -90,9 +87,9 @@ public interface IEnergyConnector extends ILoadedTile {
 		// }
 	}
 	
-	public default void tryUnsubscribe(World world, BlockPos pos) {
+	public default void tryUnsubscribe(Level world, BlockPos pos) {
 
-		TileEntity te = world.getTileEntity(pos);
+		BlockEntity te = world.getBlockEntity(pos);
 		
 		if(te instanceof IEnergyConductor) {
 			IEnergyConductor con = (IEnergyConductor) te;
@@ -105,7 +102,7 @@ public interface IEnergyConnector extends ILoadedTile {
 	public static final boolean particleDebug = true;
 	
 	public default Vec3 getDebugParticlePos() {
-		BlockPos pos = ((TileEntity) this).getPos();
+		BlockPos pos = ((BlockEntity) this).getBlockPos();
 		Vec3 vec = Vec3.createVectorHelper(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5);
 		return vec;
 	}
@@ -124,22 +121,22 @@ public interface IEnergyConnector extends ILoadedTile {
 		return false;
 	}
 
-	public default void updateStandardConnections(World world, TileEntity te) {
-		updateStandardConnections(world, te.getPos());
+	public default void updateStandardConnections(Level world, BlockEntity te) {
+		updateStandardConnections(world, te.getBlockPos());
 	}
 		
-	public default void updateStandardConnections(World world, BlockPos pos) {
+	public default void updateStandardConnections(Level world, BlockPos pos) {
 		
 		for(ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-			this.trySubscribe(world, pos.add(dir.offsetX, dir.offsetY, dir.offsetZ), dir);
+			this.trySubscribe(world, pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ), dir);
 		}
 	}
 
-	public default void updateConnectionsExcept(World world, BlockPos pos, ForgeDirection nogo) {
+	public default void updateConnectionsExcept(Level world, BlockPos pos, ForgeDirection nogo) {
 		
 		for(ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
 			if(dir != nogo)
-				this.trySubscribe(world, pos.add(dir.offsetX, dir.offsetY, dir.offsetZ), dir);
+				this.trySubscribe(world, pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ), dir);
 		}
 	}
 }

@@ -1,22 +1,20 @@
 package com.hbm.animloader;
 
 import java.nio.FloatBuffer;
-
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Quaternion;
-
 import com.hbm.render.amlfrom1710.Vec3;
+import com.sun.jna.Memory;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
+import org.joml.Quaternionf;
+import org.lwjgl.system.MemoryStack;
 
-import net.minecraft.client.renderer.GLAllocation;
-import net.minecraft.client.renderer.GlStateManager;
 
 public class Transform {
-
-	protected static FloatBuffer auxGLMatrix = GLAllocation.createDirectFloatBuffer(16);
+	protected static FloatBuffer auxGLMatrix = MemoryStack.stackMalloc(16).asFloatBuffer();
 	
 	Vec3 scale;
 	Vec3 translation;
-	Quaternion rotation;
+	Quaternionf rotation;
 	
 	boolean hidden = false;
 	
@@ -24,7 +22,7 @@ public class Transform {
 		scale = getScaleFromMatrix(matrix);
 		auxGLMatrix.put(matrix);
 		auxGLMatrix.rewind();
-		rotation = new Quaternion().setFromMatrix((Matrix4f) new Matrix4f().load(auxGLMatrix));
+		rotation = new Quaternionf().setFromsetFromMatrix(new Matrix4fc().add.load(auxGLMatrix));
 		translation = Vec3.createVectorHelper(matrix[0*4+3], matrix[1*4+3], matrix[2*4+3]);
 		auxGLMatrix.rewind();
 	}

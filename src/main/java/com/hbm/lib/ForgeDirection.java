@@ -1,28 +1,41 @@
 package com.hbm.lib;
 
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Rotation;
+
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Rotation;
 
 public enum ForgeDirection {
 
-	//Drillgon200: Screw it, copy paste ForgeDirection from 1.7.10 because EnumFacing doesn't have UNKNOWN
-	
-	/** -Y */
+    //Drillgon200: Screw it, copy paste ForgeDirection from 1.7.10 because EnumFacing doesn't have UNKNOWN
+
+    /**
+     * -Y
+     */
     DOWN(0, -1, 0),
 
-    /** +Y */
+    /**
+     * +Y
+     */
     UP(0, 1, 0),
 
-    /** -Z */
+    /**
+     * -Z
+     */
     NORTH(0, 0, -1),
 
-    /** +Z */
+    /**
+     * +Z
+     */
     SOUTH(0, 0, 1),
 
-    /** -X */
+    /**
+     * -X
+     */
     WEST(-1, 0, 0),
 
-    /** +X */
+    /**
+     * +X
+     */
     EAST(1, 0, 0),
 
     /**
@@ -38,68 +51,62 @@ public enum ForgeDirection {
     public static final int[] OPPOSITES = {1, 0, 3, 2, 5, 4, 6};
     // Left hand rule rotation matrix for all possible axes of rotation
     public static final int[][] ROTATION_MATRIX = {
-        {0, 1, 4, 5, 3, 2, 6},
-        {0, 1, 5, 4, 2, 3, 6},
-    	{5, 4, 2, 3, 0, 1, 6},
-    	{4, 5, 2, 3, 1, 0, 6},
-    	{2, 3, 1, 0, 4, 5, 6},
-    	{3, 2, 0, 1, 4, 5, 6},
-    	{0, 1, 2, 3, 4, 5, 6},
+            {0, 1, 4, 5, 3, 2, 6},
+            {0, 1, 5, 4, 2, 3, 6},
+            {5, 4, 2, 3, 0, 1, 6},
+            {4, 5, 2, 3, 1, 0, 6},
+            {2, 3, 1, 0, 4, 5, 6},
+            {3, 2, 0, 1, 4, 5, 6},
+            {0, 1, 2, 3, 4, 5, 6},
     };
 
-    private ForgeDirection(int x, int y, int z)
-    {
+    ForgeDirection(int x, int y, int z) {
         offsetX = x;
         offsetY = y;
         offsetZ = z;
         flag = 1 << ordinal();
     }
 
-    public static ForgeDirection getOrientation(int id)
-    {
-        if (id >= 0 && id < VALID_DIRECTIONS.length)
-        {
+    public static ForgeDirection getOrientation(int id) {
+        if (id >= 0 && id < VALID_DIRECTIONS.length) {
             return VALID_DIRECTIONS[id];
         }
         return UNKNOWN;
     }
 
-    public ForgeDirection getOpposite()
-    {
+    public ForgeDirection getOpposite() {
         return getOrientation(OPPOSITES[ordinal()]);
     }
 
-    public ForgeDirection getRotation(ForgeDirection axis)
-    {
-    	return getOrientation(ROTATION_MATRIX[axis.ordinal()][ordinal()]);
+    public ForgeDirection getRotation(ForgeDirection axis) {
+        return getOrientation(ROTATION_MATRIX[axis.ordinal()][ordinal()]);
     }
-    
-    public Rotation getBlockRotation(){
-    	switch(this){
-    	case NORTH: return Rotation.NONE;
-    	case SOUTH: return Rotation.CLOCKWISE_180;
-    	case EAST: return Rotation.COUNTERCLOCKWISE_90;
-    	case WEST: return Rotation.CLOCKWISE_90;
-    	default:
-    	return Rotation.NONE;
-    	}
+
+    public Rotation getBlockRotation() {
+        return switch (this) {
+            case NORTH -> Rotation.NONE;
+            case SOUTH -> Rotation.CLOCKWISE_180;
+            case EAST -> Rotation.COUNTERCLOCKWISE_90;
+            case WEST -> Rotation.CLOCKWISE_90;
+            default -> Rotation.NONE;
+        };
     }
-    
-    public EnumFacing toEnumFacing(){
-    	return EnumFacing.values()[ordinal()];
+
+    public Direction toEnumFacing() {
+        return Direction.values()[ordinal()];
     }
-    
-    public float getRotationDegrees(){
-    	switch(this.ordinal()) {
-		case 2: return 0;
-		case 4: return 90;
-		case 3: return 180;
-		case 5: return 270;
-		default: return 0;
-		}
+
+    public float getRotationDegrees() {
+        return switch (this.ordinal()) {
+            case 2 -> 0;
+            case 4 -> 90;
+            case 3 -> 180;
+            case 5 -> 270;
+            default -> 0;
+        };
     }
-    
-    public float getRotationRadians(){
-    	return (float) Math.toRadians(getRotationDegrees());
+
+    public float getRotationRadians() {
+        return (float) Math.toRadians(getRotationDegrees());
     }
 }

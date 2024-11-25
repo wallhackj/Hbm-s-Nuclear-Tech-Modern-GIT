@@ -4,16 +4,18 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sun.jna.Memory;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.util.BobMathUtil;
+import org.lwjgl.system.MemoryStack;
 
-import net.minecraft.client.renderer.GLAllocation;
-import net.minecraft.util.math.MathHelper;
+import static org.joml.Math.clamp;
+
 
 public class AnimatedModel {
 
-	public static FloatBuffer auxGLMatrix = GLAllocation.createDirectFloatBuffer(16);
+	public static FloatBuffer auxGLMatrix = MemoryStack.stackMalloc(16).asFloatBuffer();
 
 	//Pointless...
 	public AnimationController controller;
@@ -74,7 +76,7 @@ public class AnimatedModel {
 		if(activeAnim.reverse)
 			diff = activeAnim.anim.length - diff;
 		diff *= activeAnim.speedScale;
-		float remappedTime = MathHelper.clamp(BobMathUtil.remap(diff, 0, activeAnim.anim.length, 0, numKeyFrames - 1), 0, numKeyFrames - 1);
+		float remappedTime = clamp(BobMathUtil.remap(diff, 0, activeAnim.anim.length, 0, numKeyFrames - 1), 0, numKeyFrames - 1);
 		float diffN = BobMathUtil.remap01_clamp(diff, 0, activeAnim.anim.length);
 		int index = (int) remappedTime;
 		int first = index;
@@ -100,7 +102,7 @@ public class AnimatedModel {
 			} else {
 				auxGLMatrix.put(transform);
 				auxGLMatrix.rewind();
-				GL11.glMultMatrix(auxGLMatrix);
+				GL11.glMultMatrixf(auxGLMatrix);
 			}
 		}
 		if(c != null)
@@ -125,7 +127,7 @@ public class AnimatedModel {
 		if(hasTransform) {
 			auxGLMatrix.put(transform);
 			auxGLMatrix.rewind();
-			GL11.glMultMatrix(auxGLMatrix);
+			GL11.glMultMatrixf(auxGLMatrix);
 		}
 		boolean hidden = false;
 		if(c != null)

@@ -1,8 +1,9 @@
 package api.hbm.block;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
+
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 public interface IDrillInteraction {
 
@@ -16,7 +17,7 @@ public interface IDrillInteraction {
 	 * @param drill Might be a tool, tile entity or anything that breaks blocks
 	 * @return	
 	 */
-	public boolean canBreak(World world, int x, int y, int z, IBlockState state, IMiningDrill drill);
+	public boolean canBreak(Level world, int x, int y, int z, BlockState state, IMiningDrill drill);
 	
 	/**
 	 * Returns an itemstack, usually when the block is not destroyed. Laser drills may drop this and mechanical drills will add it to their inventories.
@@ -27,7 +28,7 @@ public interface IDrillInteraction {
 	 * @param drill Might be a tool, tile entity or anything that breaks blocks
 	 * @return
 	 */
-	public ItemStack extractResource(World world, int x, int y, int z, IBlockState state, IMiningDrill drill);
+	public ItemStack extractResource(Level world, int x, int y, int z, BlockState state, IMiningDrill drill);
 	
 	/**
 	 * The hardness that should be considered instead of the hardness value of the block itself
@@ -35,9 +36,9 @@ public interface IDrillInteraction {
 	 * @param x
 	 * @param y
 	 * @param z
-	 * @param meta
+	 * @param state
 	 * @param drill
 	 * @return
 	 */
-	public float getRelativeHardness(World world, int x, int y, int z, IBlockState state, IMiningDrill drill);
+	public float getRelativeHardness(Level world, int x, int y, int z, BlockState state, IMiningDrill drill);
 }

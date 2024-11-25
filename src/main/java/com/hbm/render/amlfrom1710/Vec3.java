@@ -1,10 +1,10 @@
 package com.hbm.render.amlfrom1710;
 
-import javax.vecmath.Matrix3f;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+
+import glmath.glm.vec._3.d.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import org.joml.Matrix3f;
 
 public class Vec3
 {
@@ -26,7 +26,7 @@ public class Vec3
 
     public static Vec3 createVectorHelper(Entity e)
     {
-        return new Vec3(e.posX, e.posY, e.posZ);
+        return new Vec3(e.getX(), e.getY(), e.getZ());
     }
     
     public Vec3(Vec3d vec) {
@@ -99,7 +99,7 @@ public class Vec3
      */
     public Vec3 normalize()
     {
-        double d0 = (double)MathHelper.sqrt(this.xCoord * this.xCoord + this.yCoord * this.yCoord + this.zCoord * this.zCoord);
+        double d0 = Math.sqrt(this.xCoord * this.xCoord + this.yCoord * this.yCoord + this.zCoord * this.zCoord);
         return d0 < 1.0E-4D ? createVectorHelper(0.0D, 0.0D, 0.0D) : createVectorHelper(this.xCoord / d0, this.yCoord / d0, this.zCoord / d0);
     }
 
@@ -145,7 +145,7 @@ public class Vec3
         double d0 = p_72438_1_.xCoord - this.xCoord;
         double d1 = p_72438_1_.yCoord - this.yCoord;
         double d2 = p_72438_1_.zCoord - this.zCoord;
-        return (double)MathHelper.sqrt(d0 * d0 + d1 * d1 + d2 * d2);
+        return Math.sqrt(d0 * d0 + d1 * d1 + d2 * d2);
     }
 
     public double distanceTo(double x, double y, double z)
@@ -153,15 +153,15 @@ public class Vec3
         double d0 = x - this.xCoord;
         double d1 = y - this.yCoord;
         double d2 = z - this.zCoord;
-        return (double)MathHelper.sqrt(d0 * d0 + d1 * d1 + d2 * d2);
+        return Math.sqrt(d0 * d0 + d1 * d1 + d2 * d2);
     }
 
     public double distanceTo(Entity e)
     {
-        double d0 = e.posX - this.xCoord;
-        double d1 = e.posY - this.yCoord;
-        double d2 = e.posZ - this.zCoord;
-        return (double)MathHelper.sqrt(d0 * d0 + d1 * d1 + d2 * d2);
+        double d0 = e.getX() - this.xCoord;
+        double d1 = e.getY() - this.yCoord;
+        double d2 = e.getZ() - this.zCoord;
+        return Math.sqrt(d0 * d0 + d1 * d1 + d2 * d2);
     }
 
     /**
@@ -191,7 +191,7 @@ public class Vec3
      */
     public double lengthVector()
     {
-        return (double)MathHelper.sqrt(this.xCoord * this.xCoord + this.yCoord * this.yCoord + this.zCoord * this.zCoord);
+        return Math.sqrt(this.xCoord * this.xCoord + this.yCoord * this.yCoord + this.zCoord * this.zCoord);
     }
     
     public double lengthSquared(){
@@ -271,11 +271,11 @@ public class Vec3
      */
     public void rotateAroundX(float p_72440_1_)
     {
-        float f1 = MathHelper.cos(p_72440_1_);
-        float f2 = MathHelper.sin(p_72440_1_);
+        double f1 = Math.cos(p_72440_1_);
+        double f2 = Math.sin(p_72440_1_);
         double d0 = this.xCoord;
-        double d1 = this.yCoord * (double)f1 + this.zCoord * (double)f2;
-        double d2 = this.zCoord * (double)f1 - this.yCoord * (double)f2;
+        double d1 = this.yCoord * f1 + this.zCoord * f2;
+        double d2 = this.zCoord * f1 - this.yCoord * f2;
         this.setComponents(d0, d1, d2);
     }
 
@@ -284,11 +284,11 @@ public class Vec3
      */
     public void rotateAroundY(float p_72442_1_)
     {
-        float f1 = MathHelper.cos(p_72442_1_);
-        float f2 = MathHelper.sin(p_72442_1_);
-        double d0 = this.xCoord * (double)f1 + this.zCoord * (double)f2;
+        double f1 = Math.cos(p_72442_1_);
+        double f2 = Math.sin(p_72442_1_);
+        double d0 = this.xCoord * f1 + this.zCoord * f2;
         double d1 = this.yCoord;
-        double d2 = this.zCoord * (double)f1 - this.xCoord * (double)f2;
+        double d2 = this.zCoord * f1 - this.xCoord * f2;
         this.setComponents(d0, d1, d2);
     }
 
@@ -297,10 +297,10 @@ public class Vec3
      */
     public void rotateAroundZ(float p_72446_1_)
     {
-        float f1 = MathHelper.cos(p_72446_1_);
-        float f2 = MathHelper.sin(p_72446_1_);
-        double d0 = this.xCoord * (double)f1 + this.yCoord * (double)f2;
-        double d1 = this.yCoord * (double)f1 - this.xCoord * (double)f2;
+        double f1 = Math.cos(p_72446_1_);
+        double f2 = Math.sin(p_72446_1_);
+        double d0 = this.xCoord * f1 + this.yCoord * f2;
+        double d1 = this.yCoord * f1 - this.xCoord * f2;
         double d2 = this.zCoord;
         this.setComponents(d0, d1, d2);
     }
@@ -347,7 +347,7 @@ public class Vec3
 	}
 
     public BlockPos toBlockPos(){
-        return new BlockPos(xCoord, yCoord, zCoord);
+        return new BlockPos((int) xCoord, (int) yCoord, (int) zCoord);
     }
 
 	public Vec3 max(double d) {

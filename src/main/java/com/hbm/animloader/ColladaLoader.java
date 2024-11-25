@@ -1,14 +1,15 @@
 package com.hbm.animloader;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.Level;
 import org.lwjgl.opengl.GL11;
@@ -21,15 +22,8 @@ import org.xml.sax.SAXException;
 import com.hbm.main.MainRegistry;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.resources.IResource;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
-@SideOnly(Side.CLIENT)
+@Mod.EventBusSubscriber(modid = "yourmodid", bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ColladaLoader {
 	//Drillgon200: This code is only slightly less terrible than the first time. I hate XML.
 	
@@ -46,24 +40,20 @@ public class ColladaLoader {
 	}
 	
 	public static AnimatedModel load(ResourceLocation file, boolean flipV) {
-		IResource res;
-		try {
-			res = Minecraft.getMinecraft().getResourceManager().getResource(file);
-			Document doc;
-			try {
-				doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(res.getInputStream());
-				return parse(doc.getDocumentElement(), flipV);
-			} catch(SAXException e) {
-				e.printStackTrace();
-			} catch(IOException e) {
-				e.printStackTrace();
-			} catch(ParserConfigurationException e) {
-				e.printStackTrace();
-			}
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
-		MainRegistry.logger.log(Level.ERROR, "FAILED TO LOAD MODEL: " + file);
+		Optional<Resource> res;
+        res = Minecraft.getInstance().getResourceManager().getResource(file);
+        Document doc;
+        try {
+            doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(res.get().open());
+            return parse(doc.getDocumentElement(), flipV);
+        } catch(SAXException e) {
+            e.printStackTrace();
+        } catch(IOException e) {
+            e.printStackTrace();
+        } catch(ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+        MainRegistry.logger.log(Level.ERROR, "FAILED TO LOAD MODEL: " + file);
 		return null;
 	}
 	

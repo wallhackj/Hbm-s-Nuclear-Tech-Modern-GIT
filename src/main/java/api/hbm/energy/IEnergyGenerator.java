@@ -1,9 +1,9 @@
 package api.hbm.energy;
 
 import com.hbm.lib.ForgeDirection;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 public interface IEnergyGenerator extends IEnergyUser {
 
@@ -22,8 +22,8 @@ public interface IEnergyGenerator extends IEnergyUser {
 		return 0;
 	}
 
-	public default void sendPower(World world, BlockPos pos){
+	public default void sendPower(Level world, BlockPos pos){
 		for(ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
-			this.sendPower(world, pos.add(dir.offsetX, dir.offsetY, dir.offsetZ), dir);
+			this.sendPower(world, pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ), dir);
 	}
 }
