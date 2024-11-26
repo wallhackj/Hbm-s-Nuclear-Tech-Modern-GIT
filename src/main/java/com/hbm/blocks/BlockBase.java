@@ -5,14 +5,9 @@ import java.util.List;
 import com.hbm.main.MainRegistry;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.SoundType;
-
 
 public class BlockBase extends Block {
-	
+
 	public BlockBase(Material m, String s){
 		super(m);
 		this.setUnlocalizedName(s);
@@ -31,13 +26,13 @@ public class BlockBase extends Block {
 		this.setCreativeTab(MainRegistry.controlTab);
 		ModBlocks.ALL_BLOCKS.add(this);
 	}
-	
+
 	@Override
-	public void addInformation(ItemStack stack, Level player, List<String> list, ITooltipFlag advanced) {
+	public void addInformation(ItemStack stack, World player, List<String> list, ITooltipFlag advanced) {
 		if(stack.getItem() == Item.getItemFromBlock(ModBlocks.meteor_battery)){
 			list.add(I18nUtil.resolveKey("desc.teslacoils"));
 		}
-		
+
 		float hardness = this.getExplosionResistance(null);
 		if(hardness > 50){
 			list.add(TextFormatting.GOLD + I18nUtil.resolveKey("trait.blastres", hardness));
