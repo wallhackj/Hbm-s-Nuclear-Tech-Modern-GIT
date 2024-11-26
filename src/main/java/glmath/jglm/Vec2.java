@@ -8,6 +8,7 @@ package glmath.jglm;
  * @deprecated 
  * @author gbarbieri
  */
+@Deprecated
 public class Vec2 extends Vec {
 
     public float x;

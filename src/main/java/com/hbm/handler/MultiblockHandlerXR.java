@@ -3,24 +3,23 @@ package com.hbm.handler;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.lib.ForgeDirection;
 
-import net.minecraft.block.Block;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 
 public class MultiblockHandlerXR {
 	
 	//when looking north
 	//											U  D  N  S  W  E
-	public static int[] uni = 		new int[] { 3, 0, 4, 4, 4, 4 };
+	public static int[] uni = new int[] { 3, 0, 4, 4, 4, 4 };
 	
-	public static boolean checkSpace(World world, int x, int y, int z, int[] dim, int ox, int oy, int oz, ForgeDirection dir) {
+	public static boolean checkSpace(Level world, int x, int y, int z, int[] dim, int ox, int oy, int oz, ForgeDirection dir) {
 		return checkSpace(world, x, y, z, dim, ox, oy, oz, dir.toEnumFacing());
 	}
 	
-	public static boolean checkSpace(World world, int x, int y, int z, int[] dim, int ox, int oy, int oz, EnumFacing dir) {
-		MutableBlockPos pos = new BlockPos.MutableBlockPos();
+	public static boolean checkSpace(Level world, int x, int y, int z, int[] dim, int ox, int oy, int oz, Direction dir) {
+		BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 		if(dim == null || dim.length != 6)
 			return false;
 		
@@ -36,9 +35,9 @@ public class MultiblockHandlerXR {
 					if(a == ox && b == oy && c == oz)
 						continue;
 					
-					if(!world.getBlockState(pos.setPos(a, b, c)).getBlock().canPlaceBlockAt(world, pos.setPos(a, b, c))) {
-						return false;
-					}
+//					if(!world.getBlockState(pos.set(a, b, c)).getBlock().canPlaceBlockAt(world, pos.setPos(a, b, c))) {
+//						return false;
+//					}
 					
 					count++;
 					
@@ -53,13 +52,13 @@ public class MultiblockHandlerXR {
 		return true;
 	}
 	
-	public static void fillSpace(World world, int x, int y, int z, int[] dim, Block block, ForgeDirection dir) {
+	public static void fillSpace(Level world, int x, int y, int z, int[] dim, Block block, ForgeDirection dir) {
 		fillSpace(world, x, y, z, dim, block, dir.toEnumFacing());
 	}
 	
 	@SuppressWarnings("deprecation")
-	public static void fillSpace(World world, int x, int y, int z, int[] dim, Block block, EnumFacing dir) {
-		MutableBlockPos pos = new BlockPos.MutableBlockPos();
+	public static void fillSpace(Level world, int x, int y, int z, int[] dim, Block block, Direction dir) {
+		BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 		if(dim == null || dim.length != 6)
 			return;
 		
@@ -91,7 +90,7 @@ public class MultiblockHandlerXR {
 						continue;
 					}
 					
-					world.setBlockState(pos.setPos(a, b, c), block.getStateFromMeta(meta), 3);
+//					world.setBlockAndUpdate(pos.set(a, b, c), block.getStateFgetStateFromMeta(meta), 3);
 					
 					count++;
 					
@@ -108,8 +107,8 @@ public class MultiblockHandlerXR {
 	}
 	
 	@Deprecated
-	public static void emptySpace(World world, int x, int y, int z, int[] dim, Block block, EnumFacing dir) {
-		MutableBlockPos pos = new BlockPos.MutableBlockPos();
+	public static void emptySpace(Level world, int x, int y, int z, int[] dim, Block block, Direction dir) {
+		BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 		if(dim == null || dim.length != 6)
 			return;
 
@@ -123,8 +122,8 @@ public class MultiblockHandlerXR {
 			for(int b = y - rot[1]; b <= y + rot[0]; b++) {
 				for(int c = z - rot[2]; c <= z + rot[3]; c++) {
 					
-					if(world.getBlockState(pos.setPos(a, b, c)).getBlock() == block)
-						world.setBlockToAir(pos.setPos(a, b, c));
+					if(world.getBlockState(pos.set(a, b, c)).getBlock() == block)
+						world.removeBlock(pos.set(a, b, c), false);
 					
 					count++;
 					
@@ -137,25 +136,25 @@ public class MultiblockHandlerXR {
 		}
 	}
 	
-	public static int[] rotate(int[] dim, EnumFacing dir) {
+	public static int[] rotate(int[] dim, Direction dir) {
 		
 		if(dim == null)
 			return null;
 		
-		if(dir == EnumFacing.SOUTH)
+		if(dir == Direction.SOUTH)
 			return dim;
 		
-		if(dir == EnumFacing.NORTH) {
+		if(dir == Direction.NORTH) {
 			//                 U       D       N       S       W       E
 			return new int[] { dim[0], dim[1], dim[3], dim[2], dim[5], dim[4] };
 		}
 		
-		if(dir == EnumFacing.EAST) {
+		if(dir == Direction.EAST) {
 			//                 U       D       N       S       W       E
 			return new int[] { dim[0], dim[1], dim[5], dim[4], dim[2], dim[3] };
 		}
 		
-		if(dir == EnumFacing.WEST) {
+		if(dir == Direction.WEST) {
 			//                 U       D       N       S       W       E
 			return new int[] { dim[0], dim[1], dim[4], dim[5], dim[3], dim[2] };
 		}

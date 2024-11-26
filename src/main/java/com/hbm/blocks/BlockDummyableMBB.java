@@ -9,12 +9,11 @@ import com.hbm.handler.MultiblockBBHandler;
 import com.hbm.handler.MultiblockBBHandler.MultiblockBounds;
 import com.hbm.lib.ForgeDirection;
 
-import net.minecraft.block.material.Material;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+
 
 public abstract class BlockDummyableMBB extends BlockDummyable {
 
@@ -23,28 +22,28 @@ public abstract class BlockDummyableMBB extends BlockDummyable {
 	}
 	
 	@Override
-	protected boolean checkRequirement(World world, int xx, int yy, int zz, ForgeDirection dir, int o) {
+	protected boolean checkRequirement(Level world, int xx, int yy, int zz, ForgeDirection dir, int o) {
 		MultiblockBounds b = MultiblockBBHandler.REGISTRY.get(this);
-		Map<BlockPos, List<AxisAlignedBB>> blocks = new HashMap<>();
+		Map<BlockPos, List<AABB>> blocks = new HashMap<>();
 		for(AxisAlignedBB unrotatedBox : b.boxes){
-			AxisAlignedBB box = rotate(unrotatedBox, dir.toEnumFacing());
-			int x1 = MathHelper.floor(box.minX);
-			int x2 = MathHelper.ceil(box.maxX);
-			int y1 = MathHelper.floor(box.minY);
-			int y2 = MathHelper.ceil(box.maxY);
-			int z1 = MathHelper.floor(box.minZ);
-			int z2 = MathHelper.ceil(box.maxZ);
+			AABB box = rotate(unrotatedBox, dir.toEnumFacing());
+			int x1 = Math.floor(box.minX);
+			int x2 = Math.ceil(box.maxX);
+			int y1 = Math.floor(box.minY);
+			int y2 = Math.ceil(box.maxY);
+			int z1 = Math.floor(box.minZ);
+			int z2 = Math.ceil(box.maxZ);
 
 			for(int x = x1; x <= x2; x++) {
 				for(int y = y1; y <= y2; y++) {
 					for(int z = z1; z <= z2; z++) {
 						BlockPos pos = new BlockPos(x, y, z);
-						List<AxisAlignedBB> blockBBs = blocks.get(pos);
+						List<AABB> blockBBs = blocks.get(pos);
 						if(blockBBs == null){
 							blockBBs = new ArrayList<>();
 							blocks.put(pos, blockBBs);
 						}
-						AxisAlignedBB blockBB = clampToPos(box, pos).offset(-pos.getX(), -pos.getY(), -pos.getZ());
+						AABB blockBB = clampToPos(box, pos).offset(-pos.getX(), -pos.getY(), -pos.getZ());
 						if(volume(blockBB) == 0){
 							if(blockBBs.size() == 0)
 								blocks.remove(pos);
@@ -70,7 +69,7 @@ public abstract class BlockDummyableMBB extends BlockDummyable {
 	}
 	
 	@Override
-	protected void fillSpace(World world, int xxx, int yyy, int zzz, ForgeDirection dir, int o) {
+	protected void fillSpace(Level world, int xxx, int yyy, int zzz, ForgeDirection dir, int o) {
 		int xx = xxx + dir.offsetX * o;
 		int yy = yyy + dir.offsetY * o;
 		int zz = zzz + dir.offsetZ * o;

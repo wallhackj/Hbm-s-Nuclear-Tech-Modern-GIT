@@ -8,6 +8,7 @@ package glmath.jglm;
  * @deprecated 
  * @author gbarbieri
  */
+@Deprecated
 public class Jglm {
 
     public static float mix(float start, float end, float lerp) {

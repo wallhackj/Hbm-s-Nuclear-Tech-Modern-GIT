@@ -33,6 +33,7 @@ package glmath.jglm;
  * @deprecated
  * @author GBarbieri
  */
+@Deprecated
 public class Quat {
 
     public float x, y, z, w;

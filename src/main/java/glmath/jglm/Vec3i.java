@@ -8,6 +8,7 @@ package glmath.jglm;
  * @deprecated 
  * @author gbarbieri
  */
+@Deprecated
 public class Vec3i extends Veci {
 
     public int x;
