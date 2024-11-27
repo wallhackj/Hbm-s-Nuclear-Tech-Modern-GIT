@@ -6,14 +6,12 @@ import java.util.concurrent.Callable;
 
 import com.hbm.capability.HbmLivingProps.ContaminationEffect;
 
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.MathHelper;
+
+import net.minecraft.core.Direction;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.Capability.IStorage;
-import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+
+import static org.joml.Math.clamp;
 
 public class HbmLivingCapability {
 	
@@ -79,7 +77,7 @@ public class HbmLivingCapability {
 
 		@Override
 		public void setRads(float rads) {
-			this.rads = MathHelper.clamp(rads, 0, 2500);
+			this.rads = clamp(rads, 0, 2500);
 		}
 
 		@Override
@@ -94,12 +92,12 @@ public class HbmLivingCapability {
 		
 		@Override
 		public void increaseRads(float rads){
-			this.rads = MathHelper.clamp(this.rads + rads, 0, 2500);
+			this.rads = clamp(this.rads + rads, 0, 2500);
 		}
 		
 		@Override
 		public void decreaseRads(float rads){
-			this.rads = MathHelper.clamp(this.rads - rads, 0, 2500);
+			this.rads = clamp(this.rads - rads, 0, 2500);
 		}
 
 		@Override
@@ -134,12 +132,12 @@ public class HbmLivingCapability {
 
 		@Override
 		public void increaseDigamma(float dig){
-			this.digamma = MathHelper.clamp(this.digamma + dig, 0, 1000);
+			this.digamma = clamp(this.digamma + dig, 0, 1000);
 		}
 		
 		@Override
 		public void decreaseDigamma(float dig){
-			this.digamma = MathHelper.clamp(this.digamma - dig, 0, 1000);
+			this.digamma = clamp(this.digamma - dig, 0, 1000);
 		}
 
 		@Override
@@ -225,14 +223,14 @@ public class HbmLivingCapability {
 	public static class EntityHbmPropsStorage implements IStorage<IEntityHbmProps>{
 
 		@Override
-		public NBTBase writeNBT(Capability<IEntityHbmProps> capability, IEntityHbmProps instance, EnumFacing side) {
+		public NBTBase writeNBT(Capability<IEntityHbmProps> capability, IEntityHbmProps instance, Direction side) {
 			NBTTagCompound tag = new NBTTagCompound();
 			instance.saveNBTData(tag);
 			return tag;
 		}
 
 		@Override
-		public void readNBT(Capability<IEntityHbmProps> capability, IEntityHbmProps instance, EnumFacing side, NBTBase nbt) {
+		public void readNBT(Capability<IEntityHbmProps> capability, IEntityHbmProps instance, Direction side, NBTBase nbt) {
 			if(nbt instanceof NBTTagCompound){
 				NBTTagCompound tag = (NBTTagCompound)nbt;
 				instance.loadNBTData(tag);
@@ -337,12 +335,12 @@ public class HbmLivingCapability {
 		private IEntityHbmProps instance = ENT_HBM_PROPS_CAP.getDefaultInstance();
 		
 		@Override
-		public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+		public boolean hasCapability(Capability<?> capability, Direction facing) {
 			return capability == ENT_HBM_PROPS_CAP;
 		}
 
 		@Override
-		public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+		public <T> T getCapability(Capability<T> capability, Direction facing) {
 			return capability == ENT_HBM_PROPS_CAP ? ENT_HBM_PROPS_CAP.<T>cast(this.instance) : null;
 		}
 

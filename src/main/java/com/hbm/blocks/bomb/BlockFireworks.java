@@ -6,24 +6,16 @@ import com.hbm.util.I18nUtil;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.items.ModItems;
 import com.hbm.tileentity.bomb.TileEntityFireworks;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
-import net.minecraft.block.BlockContainer;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemDye;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.Style;
-import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
 
 public class BlockFireworks extends BlockContainer {
 
@@ -36,16 +28,17 @@ public class BlockFireworks extends BlockContainer {
 	}
 
 	@Override
-	public TileEntity createNewTileEntity(World worldIn, int meta) {
+	public TileEntity createNewTileEntity(Level LevelIn, int meta) {
 		return new TileEntityFireworks();
 	}
 	
 	@Override
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-		if(world.isRemote)
+	public boolean onBlockActivated(Level Level, BlockPos pos, BlockState state, Player player, InteractionHand hand,
+									Direction facing, float hitX, float hitY, float hitZ) {
+		if(Level.isClientSide)
 			return true;
 
-		TileEntityFireworks te = (TileEntityFireworks)world.getTileEntity(pos);
+		TileEntityFireworks te = (TileEntityFireworks)Level.getTileEntity(pos);
 
 		if(player.getHeldItem(hand) != null && !player.getHeldItem(hand).isEmpty()) {
 
@@ -87,12 +80,12 @@ public class BlockFireworks extends BlockContainer {
 	}
 
 	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state) {
+	public EnumBlockRenderType getRenderType(BlockState state) {
 		return EnumBlockRenderType.MODEL;
 	}
 
 	@Override
-	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
+	public void addInformation(ItemStack stack, Level player, List<String> tooltip, ITooltipFlag advanced) {
 		tooltip.add(I18nUtil.resolveKey("desc.fireworks.1"));
 		tooltip.add(I18nUtil.resolveKey("desc.fireworks.2"));
 		tooltip.add(" "+I18nUtil.resolveKey("desc.fireworks.3"));

@@ -14,19 +14,14 @@ import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
 import com.hbm.util.I18nUtil;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 
-import net.minecraft.block.material.Material;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.MobEffects;
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.ItemStack;
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextFormatting;
 
 public class ItemHazardModule {
 	/**
@@ -98,12 +93,12 @@ public class ItemHazardModule {
 		this.explosive = bang;
 	}
 
-	public void applyEffects(EntityLivingBase entity, float mod, int slot, boolean currentItem, EnumHand hand) {
+	public void applyEffects(LivingEntity entity, float mod, int slot, boolean currentItem, InteractionHand hand) {
 			
 		boolean reacher = false;
 		
-		if(entity instanceof EntityPlayer && !GeneralConfig.enable528)
-			reacher = Library.checkForHeld((EntityPlayer) entity, ModItems.reacher);
+		if(entity instanceof Player && !GeneralConfig.enable528)
+			reacher = Library.checkForHeld((Player) entity, ModItems.reacher);
 			
 		if(this.radiation * tempMod > 0) {
 			float rad = this.radiation * tempMod * mod / 20F;
@@ -120,9 +115,9 @@ public class ItemHazardModule {
 		
 
 		if(this.cryogenic > 0 && !reacher){
-			if(entity instanceof EntityLivingBase){
-				EntityLivingBase livingCEntity = (EntityLivingBase) entity;
-				boolean isProtected = entity instanceof EntityPlayer && ArmorUtil.checkForHazmat((EntityPlayer)entity);
+			if(entity instanceof LivingEntity){
+				LivingEntity livingCEntity = (LivingEntity) entity;
+				boolean isProtected = entity instanceof Player && ArmorUtil.checkForHazmat((Player)entity);
 				if(!isProtected){
 					livingCEntity.addPotionEffect(new PotionEffect(MobEffects.MINING_FATIGUE, 110, this.cryogenic-1));
 					livingCEntity.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 110, Math.min(4, this.cryogenic-1)));
@@ -135,21 +130,21 @@ public class ItemHazardModule {
 			}
 		}
 
-		if(this.fire > 0 && !reacher && (!(entity instanceof EntityPlayer) || (entity instanceof EntityPlayer && !ArmorUtil.checkForAsbestos((EntityPlayer)entity)))){
+		if(this.fire > 0 && !reacher && (!(entity instanceof Player) || (entity instanceof Player && !ArmorUtil.checkForAsbestos((Player)entity)))){
 			entity.setFire(this.fire);
 		}
 
 		if(this.toxic > 0){
-			if(entity instanceof EntityLivingBase){
-				EntityLivingBase livingTEntity = (EntityLivingBase) entity;
+			if(entity instanceof LivingEntity){
+				LivingEntity livingTEntity = (LivingEntity) entity;
 				boolean hasToxFilter = false;
 				boolean hasHazmat = false;
-				if(entity instanceof EntityPlayer){
+				if(entity instanceof Player){
 					if(ArmorRegistry.hasProtection(livingTEntity, EntityEquipmentSlot.HEAD, HazardClass.NERVE_AGENT)){
 						ArmorUtil.damageGasMaskFilter(livingTEntity, 1);
 						hasToxFilter = true;
 					}
-					hasHazmat = ArmorUtil.checkForHazmat((EntityPlayer)entity);
+					hasHazmat = ArmorUtil.checkForHazmat((Player)entity);
 				}
 
 				if(!hasToxFilter && !hasHazmat){
@@ -184,9 +179,9 @@ public class ItemHazardModule {
 
 		if(this.hydro && currentItem) {
 
-			if(!entity.world.isRemote && entity.isInWater() && entity instanceof EntityPlayer) {
+			if(!entity.world.isRemote && entity.isInWater() && entity instanceof Player) {
 				
-				EntityPlayer player = (EntityPlayer) entity;
+				Player player = (Player) entity;
 				ItemStack held = player.getHeldItem(hand);
 				
 				player.inventory.mainInventory.set(player.inventory.currentItem, held.getItem().getContainerItem(held));
@@ -197,9 +192,9 @@ public class ItemHazardModule {
 
 		if(this.explosive > 0 && currentItem) {
 
-			if(!entity.world.isRemote && entity.isBurning() && entity instanceof EntityPlayer) {
+			if(!entity.world.isRemote && entity.isBurning() && entity instanceof Player) {
 				
-				EntityPlayer player = (EntityPlayer) entity;
+				Player player = (Player) entity;
 				ItemStack held = player.getHeldItem(hand);
 				
 				player.inventory.mainInventory.set(player.inventory.currentItem, held.getItem().getContainerItem(held));
@@ -209,7 +204,7 @@ public class ItemHazardModule {
 		}
 
 		if(this.blinding && !ArmorRegistry.hasProtection(entity, EntityEquipmentSlot.HEAD, HazardClass.LIGHT)) {
-			((EntityLivingBase) entity).addPotionEffect(new PotionEffect(MobEffects.BLINDNESS, 110, 0));
+			((LivingEntity) entity).addPotionEffect(new PotionEffect(MobEffects.BLINDNESS, 110, 0));
 		}
 	}
 
@@ -233,7 +228,7 @@ public class ItemHazardModule {
 		}
 	}
 	
-	public void addInformation(ItemStack stack, List<String> list, ITooltipFlag flagIn) {
+	public void addInformation(ItemStack stack, List<String> list, TooltipFlag flagIn) {
 		
 		if(this.radiation * tempMod > 0) {
 			list.add(TextFormatting.GREEN + "[" + I18nUtil.resolveKey("trait.radioactive") + "]");
@@ -304,7 +299,7 @@ public class ItemHazardModule {
 		}
 	}
 
-	public boolean onEntityItemUpdate(EntityItem item) {
+	public boolean onEntityItemUpdate(Item item) {
 		
 		if(!item.world.isRemote) {
 			if(this.hydro && (item.isInWater() || item.world.isRainingAt(new BlockPos((int)item.posX, (int)item.posY, (int)item.posZ)) || item.world.getBlockState(new BlockPos((int)item.posX, (int)item.posY, (int)item.posZ)).getMaterial() == Material.WATER)) {

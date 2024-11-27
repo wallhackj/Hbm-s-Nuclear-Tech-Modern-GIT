@@ -4,85 +4,90 @@ import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.items.ModItems;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.phys.AABB;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.material.MapColor;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
 
 public class BlockCloudResidue extends Block {
 
 	public BlockCloudResidue(Material materialIn, String s) {
-		super(materialIn);
-		this.setUnlocalizedName(s);
-		this.setRegistryName(s);
-		this.setCreativeTab(null);
-
-		ModBlocks.ALL_BLOCKS.add(this);
+        super(null);
+//		super(materialIn);
+//		this.setUnlocalizedName(s);
+//		this.setRegistryName(s);
+//		this.setCreativeTab(null);
+//
+//		ModBlocks.ALL_BLOCKS.offset(this);
 	}
 	
-	public static boolean hasPosNeightbour(World world, BlockPos pos) {
-		Block b0 = world.getBlockState(pos.add(1, 0, 0)).getBlock();
-		Block b1 = world.getBlockState(pos.add(0, 1, 0)).getBlock();
-		Block b2 = world.getBlockState(pos.add(0, 0, 1)).getBlock();
-		Block b3 = world.getBlockState(pos.add(-1, 0, 0)).getBlock();
-		Block b4 = world.getBlockState(pos.add(0, -1, 0)).getBlock();
-		Block b5 = world.getBlockState(pos.add(0, 0, -1)).getBlock();
-		boolean b = b0.isNormalCube(world.getBlockState(pos.add(1, 0, 0)), world, pos)
-				|| b1.isNormalCube(world.getBlockState(pos.add(0, 1, 0)), world, pos)
-				|| b2.isNormalCube(world.getBlockState(pos.add(0, 0, 1)), world, pos)
-				|| b3.isNormalCube(world.getBlockState(pos.add(-1, 0, 0)), world, pos)
-				|| b4.isNormalCube(world.getBlockState(pos.add(0, -1, 0)), world, pos)
-				|| b5.isNormalCube(world.getBlockState(pos.add(0, 0, -1)), world, pos);
+	public static boolean hasPosNeightbour(Level world, BlockPos pos) {
+		// Fetching adjacent block states
+		BlockState state0 = world.getBlockState(pos.offset(1, 0, 0));
+		BlockState state1 = world.getBlockState(pos.offset(0, 1, 0));
+		BlockState state2 = world.getBlockState(pos.offset(0, 0, 1));
+		BlockState state3 = world.getBlockState(pos.offset(-1, 0, 0));
+		BlockState state4 = world.getBlockState(pos.offset(0, -1, 0));
+		BlockState state5 = world.getBlockState(pos.offset(0, 0, -1));
+
+		// Checking if any adjacent block is solid
+		boolean b = state0.isSolid() ||
+				state1.isSolid() ||
+				state2.isSolid() ||
+				state3.isSolid() ||
+				state4.isSolid() ||
+				state5.isSolid();
+
 		return b;
 	}
 
-	@Override
-	public AxisAlignedBB getSelectedBoundingBox(IBlockState state, World worldIn, BlockPos pos) {
-		return new AxisAlignedBB(pos, pos);
+//	@Override
+	public AABB getSelectedBoundingBox(BlockState state, Level worldIn, BlockPos pos) {
+		return new AABB(pos, pos);
 	}
 
-	@Override
-	public AxisAlignedBB getCollisionBoundingBox(IBlockState blockState, IBlockAccess worldIn, BlockPos pos) {
-		return NULL_AABB;
+//	@Override
+	public AABB getCollisionBoundingBox(BlockState blockState, BlockGetter worldIn, BlockPos pos) {
+//		return NULL_AABB;
+		return new AABB(pos, pos);
 	}
 
-	@Override
+//	@Override
 	public boolean isCollidable(){
 		return true;
 	}
 
-	@Override
-	public boolean isNormalCube(IBlockState state) {
+//	@Override
+	public boolean isNormalCube(BlockState state) {
 		return false;
 	}
 	
-	@Override
-	public boolean canPlaceBlockAt(World worldIn, BlockPos pos) {
+//	@Override
+	public boolean canPlaceBlockAt(Level worldIn, BlockPos pos) {
 		return hasPosNeightbour(worldIn, pos);
 	}
 
-	@Override
-	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
-		if (!BlockCloudResidue.hasPosNeightbour(world, pos) && !world.isRemote) {
-			world.setBlockToAir(pos);
+//	@Override
+	public void neighborChanged(BlockState state, Level world, BlockPos pos, Block blockIn, BlockPos fromPos) {
+		if (!BlockCloudResidue.hasPosNeightbour(world, pos) && !world.isClientSide) {
+			world.removeBlock(pos, false);
 		}
 	}
 
-	@Override
-	public MapColor getMapColor(IBlockState state, IBlockAccess worldIn, BlockPos pos) {
-		return MapColor.RED;
+//	@Override
+	public MapColor getMapColor(BlockState state, BlockGetter worldIn, BlockPos pos) {
+		return MapColor.COLOR_RED;
 	}
-	@Override
-	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+
+//	@Override
+	public Item getItemDropped(BlockState state, Random rand, int fortune) {
 		if(rand.nextInt(25) == 1){
 			return ModItems.powder_cloud;
 		}

@@ -1,9 +1,9 @@
 package com.hbm.interfaces;
 
 import com.hbm.modules.ItemHazardModule;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 
-import net.minecraft.block.Block;
-import net.minecraft.item.Item;
 
 public interface IItemHazard {
 	

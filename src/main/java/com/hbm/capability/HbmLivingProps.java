@@ -10,35 +10,33 @@ import com.hbm.lib.ModDamageSource;
 import com.hbm.main.AdvancementManager;
 import com.hbm.packet.AuxParticlePacketNT;
 import com.hbm.packet.PacketDispatcher;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.biome.Climate;
 
-import net.minecraft.block.Block;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.ai.attributes.IAttributeInstance;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
 public class HbmLivingProps {
 
 	public static final UUID digamma_UUID = UUID.fromString("2a3d8aec-5ab9-4218-9b8b-ca812bdf378b");
 
-	public static IEntityHbmProps getData(EntityLivingBase entity){
-		return entity.hasCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null) ? entity.getCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null) : HbmLivingCapability.EntityHbmPropsProvider.DUMMY;
+	public static IEntityHbmProps getData(LivingEntity entity){
+		return entity.hasCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null) ?
+                (IEntityHbmProps) entity.getCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null) :
+				HbmLivingCapability.EntityHbmPropsProvider.DUMMY;
 	}
 
 	/// RADIATION ///
-	public static float getRadiation(EntityLivingBase entity){
+	public static float getRadiation(LivingEntity entity){
 		return getData(entity).getRads();
 	}
 
-	public static void setRadiation(EntityLivingBase entity, float rad){
+	public static void setRadiation(LivingEntity entity, float rad){
 		getData(entity).setRads(rad);
 	}
 
-	public static void incrementRadiation(EntityLivingBase entity, float rad){
+	public static void incrementRadiation(LivingEntity entity, float rad){
 		float radiation = getRadiation(entity) + rad;
 
 		if(radiation > 25000000)
@@ -51,45 +49,46 @@ public class HbmLivingProps {
 
 	// Neutron Radiation
 
-	public static float getNeutron(EntityLivingBase entity){
+	public static float getNeutron(LivingEntity entity){
 		return getData(entity).getNeutrons();
 	}
 
-	public static void setNeutron(EntityLivingBase entity, float rad){
+	public static void setNeutron(LivingEntity entity, float rad){
 		getData(entity).setNeutrons(rad);
 	}
 
 
 	/// RAD ENV ///
-	public static float getRadEnv(EntityLivingBase entity){
+	public static float getRadEnv(LivingEntity entity){
 		return getData(entity).getRadsEnv();
 	}
 
-	public static void setRadEnv(EntityLivingBase entity, float rad){
+	public static void setRadEnv(LivingEntity entity, float rad){
 		getData(entity).setRadsEnv(rad);
 	}
 
 	/// RAD BUF ///
-	public static float getRadBuf(EntityLivingBase entity){
+	public static float getRadBuf(LivingEntity entity){
 		return getData(entity).getRadBuf();
 	}
 
-	public static void setRadBuf(EntityLivingBase entity, float rad){
+	public static void setRadBuf(LivingEntity entity, float rad){
 		getData(entity).setRadBuf(rad);
 	}
 
 	/// DIGAMA ///
-	public static float getDigamma(EntityLivingBase entity){
+	public static float getDigamma(LivingEntity entity){
 		return getData(entity).getDigamma();
 	}
 
-	public static void setDigamma(EntityLivingBase entity, float digamma){
+	public static void setDigamma(LivingEntity entity, float digamma){
 
 		getData(entity).setDigamma(digamma);
 
 		float healthMod = (float)Math.pow(0.5, digamma) - 1F;
 
-		IAttributeInstance attributeinstance = entity.getAttributeMap().getAttributeInstance(SharedMonsterAttributes.MAX_HEALTH);
+		AttributeInstance attributeinstance = entity.getAttributeMap()
+				.getAttributeInstance(SharedMonsterAttributes.MAX_HEALTH);
 
 		try {
 			attributeinstance.removeModifier(attributeinstance.getModifier(digamma_UUID));
@@ -113,23 +112,24 @@ public class HbmLivingProps {
 			data.setInteger("count", 50);
 			data.setInteger("block", Block.getIdFromBlock(Blocks.SOUL_SAND));
 			data.setInteger("entity", entity.getEntityId());
-			PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, 0, 0, 0), new TargetPoint(entity.dimension, entity.posX, entity.posY, entity.posZ, 50));
+			PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, 0, 0, 0), 
+					new Climate.TargetPoint(entity.dimension, entity.posX, entity.posY, entity.posZ, 50));
 		}
 
-		if(entity instanceof EntityPlayer) {
+		if(entity instanceof Player) {
 
 			float di = getData(entity).getDigamma();
 
 			if(di > 0F)
-				AdvancementManager.grantAchievement(((EntityPlayer)entity), AdvancementManager.digammaSee);
+				AdvancementManager.grantAchievement(((Player)entity), AdvancementManager.digammaSee);
 			if(di >= 2F)
-				AdvancementManager.grantAchievement(((EntityPlayer)entity), AdvancementManager.digammaFeel);
+				AdvancementManager.grantAchievement(((Player)entity), AdvancementManager.digammaFeel);
 			if(di >= 10F)
-				AdvancementManager.grantAchievement(((EntityPlayer)entity), AdvancementManager.digammaKnow);
+				AdvancementManager.grantAchievement(((Player)entity), AdvancementManager.digammaKnow);
 		}
 	}
 
-	public static void incrementDigamma(EntityLivingBase entity, float digamma){
+	public static void incrementDigamma(LivingEntity entity, float digamma){
 		float dRad = getDigamma(entity) + digamma;
 
 		if(dRad > 10)
@@ -141,11 +141,11 @@ public class HbmLivingProps {
 	}
 
 	/// ASBESTOS ///
-	public static int getAsbestos(EntityLivingBase entity){
+	public static int getAsbestos(LivingEntity entity){
 		return getData(entity).getAsbestos();
 	}
 
-	public static void setAsbestos(EntityLivingBase entity, int asbestos){
+	public static void setAsbestos(LivingEntity entity, int asbestos){
 		getData(entity).setAsbestos(asbestos);
 
 		if(asbestos >= EntityHbmProps.maxAsbestos) {
@@ -154,20 +154,20 @@ public class HbmLivingProps {
 		}
 	}
 
-	public static void incrementAsbestos(EntityLivingBase entity, int asbestos){
+	public static void incrementAsbestos(LivingEntity entity, int asbestos){
 		setAsbestos(entity, getAsbestos(entity) + asbestos);
 	}
 
-	public static void addCont(EntityLivingBase entity, ContaminationEffect cont){
+	public static void addCont(LivingEntity entity, ContaminationEffect cont){
 		getData(entity).getContaminationEffectList().add(cont);
 	}
 
 	/// BLACK LUNG DISEASE ///
-	public static int getBlackLung(EntityLivingBase entity){
+	public static int getBlackLung(LivingEntity entity){
 		return getData(entity).getBlacklung();
 	}
 
-	public static void setBlackLung(EntityLivingBase entity, int blacklung){
+	public static void setBlackLung(LivingEntity entity, int blacklung){
 		getData(entity).setBlacklung(blacklung);
 
 		if(blacklung >= EntityHbmProps.maxBlacklung) {
@@ -176,29 +176,29 @@ public class HbmLivingProps {
 		}
 	}
 
-	public static void incrementBlackLung(EntityLivingBase entity, int blacklung){
+	public static void incrementBlackLung(LivingEntity entity, int blacklung){
 		setBlackLung(entity, getBlackLung(entity) + blacklung);
 	}
 
 	/// TIME BOMB ///
-	public static int getTimer(EntityLivingBase entity){
+	public static int getTimer(LivingEntity entity){
 		return getData(entity).getBombTimer();
 	}
 
-	public static void setTimer(EntityLivingBase entity, int bombTimer){
+	public static void setTimer(LivingEntity entity, int bombTimer){
 		getData(entity).setBombTimer(bombTimer);
 	}
 
 	/// CONTAGION ///
-	public static int getContagion(EntityLivingBase entity){
+	public static int getContagion(LivingEntity entity){
 		return getData(entity).getContagion();
 	}
 
-	public static void setContagion(EntityLivingBase entity, int contageon){
+	public static void setContagion(LivingEntity entity, int contageon){
 		getData(entity).setContagion(contageon);
 	}
 
-	public static List<ContaminationEffect> getCont(EntityLivingBase e){
+	public static List<ContaminationEffect> getCont(LivingEntity e){
 		return getData(e).getContaminationEffectList();
 	}
 

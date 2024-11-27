@@ -1,10 +1,11 @@
 package com.hbm.blocks.generic;
 
-import net.minecraft.block.material.Material;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
+
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 
 public class BlockHazardFuel extends BlockHazard {
 
@@ -23,23 +24,23 @@ public class BlockHazardFuel extends BlockHazard {
 		return burntime;
 	}
 	
-	@Override
-	public int getFlammability(IBlockAccess world, BlockPos pos, EnumFacing face){
+//	@Override
+	public int getFlammability(BlockGetter world, BlockPos pos, Direction face){
 		return flammability;
 	}
 	
-	@Override
-	public int getFireSpreadSpeed(IBlockAccess world, BlockPos pos, EnumFacing face){
+//	@Override
+	public int getFireSpreadSpeed(BlockGetter world, BlockPos pos, Direction face){
 		return encouragement;
 	}
 
-	@Override
-	public boolean isFlammable(IBlockAccess world, BlockPos pos, EnumFacing face){
+//	@Override
+	public boolean isFlammable(BlockGetter world, BlockPos pos, Direction face){
 		return true;
 	}
 
-	@Override
-	public boolean isFireSource(World world, BlockPos pos, EnumFacing side){
+//	@Override
+	public boolean isFireSource(Level world, BlockPos pos, Direction side){
 		return true;
 	}
 }

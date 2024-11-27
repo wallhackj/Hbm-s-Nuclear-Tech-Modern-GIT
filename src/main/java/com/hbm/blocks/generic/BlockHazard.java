@@ -3,7 +3,6 @@ package com.hbm.blocks.generic;
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.items.ModItems;
 import com.hbm.interfaces.IItemHazard;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.main.MainRegistry;
@@ -12,8 +11,20 @@ import com.hbm.saveddata.RadiationSavedData;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.potion.HbmPotion;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 
 
 public class BlockHazard extends Block implements IItemHazard {
@@ -30,25 +41,25 @@ public class BlockHazard extends Block implements IItemHazard {
 	
 	
 	public BlockHazard(Material mat, String s) {
-		super(mat);
-		this.setUnlocalizedName(s);
-		this.setRegistryName(s);
-		this.module = new ItemHazardModule();
-
-		ModBlocks.ALL_BLOCKS.add(this);
+		super(null);
+//		this.setUnlocalizedName(s);
+//		this.setRegistryName(s);
+//		this.module = new ItemHazardModule();
+//
+//		ModBlocks.ALL_BLOCKS.add(this);
 	}
-
+	// was Iron
 	public BlockHazard(String s) {
-		this(Material.IRON, s);
+		this((Material) null, s);
 	}
 
 	public BlockHazard(Material mat, SoundType type, String s) {
 		this(mat, s);
 		setSoundType(type);
 	}
-
+	// was Iron
 	public BlockHazard(SoundType type, String s) {
-		this(Material.IRON, s);
+		this((Material) null, s);
 		setSoundType(type);
 	}
 	
@@ -57,14 +68,14 @@ public class BlockHazard extends Block implements IItemHazard {
 		return this;
 	}
 
-	@Override
-	public Block setSoundType(SoundType sound) {
-		return super.setSoundType(sound);
+//	@Override
+	public Properties setSoundType(SoundType sound) {
+		return BlockBehaviour.Properties.of().sound(sound);
 	}
 
-	@Override
-	@SideOnly(Side.CLIENT)
-	public void randomDisplayTick(IBlockState stateIn, World worldIn, BlockPos pos, Random rand){
+//	@Override
+//	@SideOnly(Side.CLIENT)
+	public void randomDisplayTick(BlockState stateIn, Level worldIn, BlockPos pos, Random rand){
 		super.randomDisplayTick(stateIn, worldIn, pos, rand);
 
 		if(extEffect == null)
@@ -81,14 +92,14 @@ public class BlockHazard extends Block implements IItemHazard {
 			break;
 			
 		case LAVAPOP:
-			worldIn.spawnParticle(EnumParticleTypes.LAVA, pos.getX() + rand.nextFloat(), pos.getY() + 1.1F, pos.getZ() + rand.nextFloat(), 0.0D, 0.0D, 0.0D);
+			worldIn.spawnParticle(ParticleTypes.LAVA, pos.getX() + rand.nextFloat(), pos.getY() + 1.1F, pos.getZ() + rand.nextFloat(), 0.0D, 0.0D, 0.0D);
 			break;
 			
 		default: break;
 		}
 	}
 	
-	private void sPart(World world, int x, int y, int z, Random rand) {
+	private void sPart(Level world, int x, int y, int z, Random rand) {
 
 		for(ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
 
@@ -109,7 +120,7 @@ public class BlockHazard extends Block implements IItemHazard {
 					iz = z + 0.5F + dir.offsetZ * 0.5 + rand.nextDouble() * dir.offsetZ;
 
 				if(this.extEffect == ExtDisplayEffect.RADFOG) {
-					world.spawnParticle(EnumParticleTypes.TOWN_AURA, ix, iy, iz, 0.0, 0.0, 0.0);
+					world.spawnParticle(ParticleTypes.TOTEM_OF_UNDYING, ix, iy, iz, 0.0, 0.0, 0.0);
 				}
 				if(this.extEffect == ExtDisplayEffect.SCHRAB) {
 					NBTTagCompound data = new NBTTagCompound();
@@ -120,9 +131,9 @@ public class BlockHazard extends Block implements IItemHazard {
 					MainRegistry.proxy.effectNT(data);
 				}
 				if(this.extEffect == ExtDisplayEffect.FLAMES) {
-					world.spawnParticle(EnumParticleTypes.FLAME, ix, iy, iz, 0.0, 0.0, 0.0);
-					world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, ix, iy, iz, 0.0, 0.0, 0.0);
-					world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, ix, iy, iz, 0.0, 0.1, 0.0);
+					world.spawnParticle(ParticleTypes.FLAME, ix, iy, iz, 0.0, 0.0, 0.0);
+					world.spawnParticle(ParticleTypes.SMOKE, ix, iy, iz, 0.0, 0.0, 0.0);
+					world.spawnParticle(ParticleTypes.SMOKE, ix, iy, iz, 0.0, 0.1, 0.0);
 				}
 			}
 		}
@@ -151,21 +162,21 @@ public class BlockHazard extends Block implements IItemHazard {
 		return this;
 	}
 
-	@Override
-	public boolean isBeaconBase(IBlockAccess worldObj, BlockPos pos, BlockPos beacon){
+//	@Override
+	public boolean isBeaconBase(BlockGetter worldObj, BlockPos pos, BlockPos beacon){
 		return beaconable;
 	}
 	
-	@Override
-	public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand){
+//	@Override
+	public void updateTick(Level worldIn, BlockPos pos, BlockState state, Random rand){
 
 		if(this.rad3d > 0){
 			ContaminationUtil.radiate(worldIn, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 32, this.rad3d, 0, this.module.fire * 5000, 0, 0);
 			worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
 		}
-		if(this == ModBlocks.block_meteor_molten) {
-        	if(!worldIn.isRemote)
-        		worldIn.setBlockState(pos, ModBlocks.block_meteor_cobble.getDefaultState());
+		if(this.equals(ModBlocks.block_meteor_molten)) {
+        	if(!worldIn.isClientSide)
+        		worldIn.setBlockAndUpdate(pos, ModBlocks.block_meteor_cobble);
         	worldIn.playSound(null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 0.5F, 2.6F + (worldIn.rand.nextFloat() - worldIn.rand.nextFloat()) * 0.8F);
         	return;
         }
@@ -175,8 +186,8 @@ public class BlockHazard extends Block implements IItemHazard {
 	}
 
 	
-	@Override
-	public int tickRate(World world) {
+//	@Override
+	public int tickRate(Level world) {
 		if(this.rad3d > 0)
 			return 20;
 		if(this.radIn > 0)
@@ -184,20 +195,20 @@ public class BlockHazard extends Block implements IItemHazard {
 		return super.tickRate(world);
 	}
 
-	@Override
-	public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state){
+//	@Override
+	public void onBlockAdded(Level worldIn, BlockPos pos, BlockState state){
 		super.onBlockAdded(worldIn, pos, state);
 		if(this.radIn > 0 || this.rad3d > 0){
 			this.setTickRandomly(true);
-			worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
+			worldIn.setBlockAndUpdate(pos, this.defaultBlockState());
 		}
 	}
 
-	@Override
-	public void onBlockDestroyedByPlayer(World world, BlockPos pos, IBlockState state) {
-		if(this == ModBlocks.block_meteor_molten) {
-        	if(!world.isRemote)
-        		world.setBlockState(pos, Blocks.LAVA.getDefaultState());
+//	@Override
+	public void onBlockDestroyedByPlayer(Level world, BlockPos pos, BlockState state) {
+		if(this.equals(ModBlocks.block_meteor_molten)) {
+        	if(!world.isClientSide)
+        		world.setBlockAndUpdate(pos, Blocks.LAVA.defaultBlockState());
         }
 	}
 	
@@ -209,39 +220,39 @@ public class BlockHazard extends Block implements IItemHazard {
 		LAVAPOP
 	}
 
-	@Override
-	public void onEntityWalk(World worldIn, BlockPos pos, Entity entity) {
-		if(entity instanceof EntityLivingBase)
-			this.module.applyEffects((EntityLivingBase)entity, 0.5F, 0, false, EnumHand.MAIN_HAND);
+//	@Override
+	public void onEntityWalk(Level worldIn, BlockPos pos, Entity entity) {
+		if(entity instanceof LivingEntity)
+			this.module.applyEffects((LivingEntity)entity, 0.5F, 0, false, InteractionHand.MAIN_HAND);
 
 		
-    	if (entity instanceof EntityLivingBase && this == ModBlocks.brick_jungle_mystic)
+    	if (entity instanceof LivingEntity && this.equals(ModBlocks.brick_jungle_mystic))
     	{
-    		((EntityLivingBase) entity).addPotionEffect(new PotionEffect(HbmPotion.taint, 15 * 20, 2));
+    		((LivingEntity) entity).addPotionEffect(new PotionEffect(HbmPotion.taint, 15 * 20, 2));
     		return;
     	}
 	}
 
-	@Override
-	public void onEntityCollidedWithBlock(World worldIn, BlockPos pos, IBlockState state, Entity entity){
-		if(entity instanceof EntityLivingBase)
-			this.module.applyEffects((EntityLivingBase)entity, 0.5F, 0, false, EnumHand.MAIN_HAND);
+//	@Override
+	public void onEntityCollidedWithBlock(Level worldIn, BlockPos pos, BlockState state, Entity entity){
+		if(entity instanceof LivingEntity)
+			this.module.applyEffects((LivingEntity)entity, 0.5F, 0, false, InteractionHand.MAIN_HAND);
 
 		
-    	if (entity instanceof EntityLivingBase && this == ModBlocks.brick_jungle_mystic)
+    	if (entity instanceof LivingEntity && this.equals(ModBlocks.brick_jungle_mystic))
     	{
-    		((EntityLivingBase) entity).addPotionEffect(new PotionEffect(HbmPotion.taint, 15 * 20, 2));
+    		((LivingEntity) entity).addPotionEffect(new PotionEffect(HbmPotion.taint, 15 * 20, 2));
     		return;
     	}
 	}
 
-	@Override
-	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
-		if(this == ModBlocks.frozen_planks)
+//	@Override
+	public Item getItemDropped(BlockState state, Random rand, int fortune) {
+		if(this.equals(ModBlocks.frozen_planks))
 		{
 			return Items.SNOWBALL;
 		}
-		if(this == ModBlocks.frozen_dirt)
+		if(this.equals(ModBlocks.frozen_dirt))
 		{
 			return Items.SNOWBALL;
 		}
