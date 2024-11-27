@@ -5,24 +5,14 @@ import java.util.Random;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockHazardFuel;
 import com.hbm.items.ModItems;
-
-import net.minecraft.block.SoundType;
-import net.minecraft.block.properties.PropertyEnum;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.SoundType;
 
 public class BlockGraphiteDrilledBase extends BlockHazardFuel {
 
-	public static final PropertyEnum<EnumFacing.Axis> AXIS = PropertyEnum.create("axis", EnumFacing.Axis.class);
+	public static final PropertyEnum<Direction.Axis> AXIS = PropertyEnum.create("axis", EnumFacing.Axis.class);
 
 	public BlockGraphiteDrilledBase(String s) {
 		super(ModBlocks.block_graphite.getDefaultState().getMaterial(), s, ((BlockHazardFuel) ModBlocks.block_graphite).encouragement, ((BlockHazardFuel) ModBlocks.block_graphite).flammability, 16000);
@@ -32,7 +22,7 @@ public class BlockGraphiteDrilledBase extends BlockHazardFuel {
 		this.setResistance(10.0F);
 	}
 	
-	protected static void ejectItem(World world, int x, int y, int z, EnumFacing dir, ItemStack stack) {
+	protected static void ejectItem(Level world, int x, int y, int z, Direction dir, ItemStack stack) {
 		
 		EntityItem dust = new EntityItem(world, x + 0.5D + dir.getFrontOffsetX() * 0.75D, y + 0.5D + dir.getFrontOffsetY() * 0.75D, z + 0.5D + dir.getFrontOffsetZ() * 0.75D, stack);
 		dust.motionX = dir.getFrontOffsetX() * 0.25;

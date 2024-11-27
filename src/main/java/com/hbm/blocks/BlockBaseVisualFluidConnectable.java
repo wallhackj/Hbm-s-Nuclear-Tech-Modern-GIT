@@ -1,9 +1,9 @@
 package com.hbm.blocks;
 
 import com.hbm.interfaces.IFluidVisualConnectable;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.world.level.material.Fluid;
 
-import net.minecraft.block.material.Material;
-import net.minecraftforge.fluids.Fluid;
 
 public class BlockBaseVisualFluidConnectable extends BlockBase implements IFluidVisualConnectable {
 

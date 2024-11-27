@@ -3,16 +3,15 @@ package com.hbm.blocks;
 import com.hbm.blocks.machine.pile.BlockGraphiteDrilledBase;
 import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 public class BlockGraphiteDrilled extends BlockGraphiteDrilledBase {
 	
@@ -20,11 +19,11 @@ public class BlockGraphiteDrilled extends BlockGraphiteDrilledBase {
 		super(s);
 	}
 
-	@Override
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
-		if(!player.getHeldItem(hand).isEmpty()) {
+//	@Override
+	public boolean onBlockActivated(Level world, BlockPos pos, BlockState state, Player player, InteractionHand hand, Direction facing, float hitX, float hitY, float hitZ){
+		if(!player.getItemInHand(hand).isEmpty()) {
 			
-			EnumFacing.Axis axis = state.getValue(AXIS);
+			Direction.Axis axis = state.getValue(AXIS);
 
 			if(facing.getAxis() == axis) {
 				int x = pos.getX();
@@ -41,14 +40,14 @@ public class BlockGraphiteDrilled extends BlockGraphiteDrilledBase {
 		return false;
 	}
 	
-	private boolean checkInteraction(World world, int x, int y, int z, EnumFacing.Axis meta, EntityPlayer player, EnumHand hand, Item item, Block block) {
+	private boolean checkInteraction(Level world, int x, int y, int z, Direction.Axis meta, Player player, InteractionHand hand, Item item, Block block) {
 		
-		if(player.getHeldItem(hand).getItem() == item) {
-			player.getHeldItem(hand).shrink(1);
+		if(player.getItemInHand(hand).getItem() == item) {
+			player.getItemInHand(hand).shrink(1);
 			if(block instanceof BlockGraphiteDrilledBase){
-				world.setBlockState(new BlockPos(x, y, z), block.getDefaultState().withProperty(AXIS, meta), 3);
+				world.setBlockAndUpdate(new BlockPos(x, y, z), block.getDefaultState().withProperty(AXIS, meta), 3);
 			} else {
-				world.setBlockState(new BlockPos(x, y, z), block.getDefaultState(), 3);
+				world.setBlockAndUpdate(new BlockPos(x, y, z), block.getDefaultState(), 3);
 			}
 			
 

@@ -11,9 +11,11 @@ import com.hbm.lib.ForgeDirection;
 
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
+import static org.joml.Math.clamp;
 
 public abstract class BlockDummyableMBB extends BlockDummyable {
 
@@ -25,14 +27,14 @@ public abstract class BlockDummyableMBB extends BlockDummyable {
 	protected boolean checkRequirement(Level world, int xx, int yy, int zz, ForgeDirection dir, int o) {
 		MultiblockBounds b = MultiblockBBHandler.REGISTRY.get(this);
 		Map<BlockPos, List<AABB>> blocks = new HashMap<>();
-		for(AxisAlignedBB unrotatedBox : b.boxes){
+		for(AABB unrotatedBox : b.boxes){
 			AABB box = rotate(unrotatedBox, dir.toEnumFacing());
-			int x1 = Math.floor(box.minX);
-			int x2 = Math.ceil(box.maxX);
-			int y1 = Math.floor(box.minY);
-			int y2 = Math.ceil(box.maxY);
-			int z1 = Math.floor(box.minZ);
-			int z2 = Math.ceil(box.maxZ);
+			int x1 = (int) Math.floor(box.minX);
+			int x2 = (int) Math.ceil(box.maxX);
+			int y1 = (int) Math.floor(box.minY);
+			int y2 = (int) Math.ceil(box.maxY);
+			int z1 = (int) Math.floor(box.minZ);
+			int z2 = (int) Math.ceil(box.maxZ);
 
 			for(int x = x1; x <= x2; x++) {
 				for(int y = y1; y <= y2; y++) {
@@ -58,7 +60,7 @@ public abstract class BlockDummyableMBB extends BlockDummyable {
 			}
 		}
 		for(BlockPos pos : blocks.keySet()){
-			BlockPos pos1 = pos.add(xx, yy, zz);
+			BlockPos pos1 = pos.offset(xx, yy, zz);
 			if(pos1.getX() == xx && pos1.getY() == yy && pos1.getZ() == zz)
 				continue;
 			if(!world.getBlockState(pos1).getBlock().canPlaceBlockAt(world, pos1)) {
@@ -75,26 +77,26 @@ public abstract class BlockDummyableMBB extends BlockDummyable {
 		int zz = zzz + dir.offsetZ * o;
 		BlockDummyable.safeRem = true;
 		MultiblockBounds bbounds = MultiblockBBHandler.REGISTRY.get(this);
-		Map<BlockPos, List<AxisAlignedBB>> blocks = new HashMap<>();
-		for(AxisAlignedBB unrotatedBox : bbounds.boxes){
-			AxisAlignedBB box = rotate(unrotatedBox, dir.toEnumFacing());
-			int x1 = MathHelper.floor(box.minX);
-			int x2 = MathHelper.ceil(box.maxX);
-			int y1 = MathHelper.floor(box.minY);
-			int y2 = MathHelper.ceil(box.maxY);
-			int z1 = MathHelper.floor(box.minZ);
-			int z2 = MathHelper.ceil(box.maxZ);
+		Map<BlockPos, List<AABB>> blocks = new HashMap<>();
+		for(AABB unrotatedBox : bbounds.boxes){
+			AABB box = rotate(unrotatedBox, dir.toEnumFacing());
+			int x1 = (int) Math.floor(box.minX);
+			int x2 = (int) Math.ceil(box.maxX);
+			int y1 = (int) Math.floor(box.minY);
+			int y2 = (int) Math.ceil(box.maxY);
+			int z1 = (int) Math.floor(box.minZ);
+			int z2 = (int) Math.ceil(box.maxZ);
 
 			for(int x = x1; x <= x2; x++) {
 				for(int y = y1; y <= y2; y++) {
 					for(int z = z1; z <= z2; z++) {
 						BlockPos pos = new BlockPos(x, y, z);
-						List<AxisAlignedBB> blockBBs = blocks.get(pos);
+						List<AABB> blockBBs = blocks.get(pos);
 						if(blockBBs == null){
 							blockBBs = new ArrayList<>();
 							blocks.put(pos, blockBBs);
 						}
-						AxisAlignedBB blockBB = clampToPos(box, pos).offset(-pos.getX(), -pos.getY(), -pos.getZ());
+						AABB blockBB = clampToPos(box, pos).offset(-pos.getX(), -pos.getY(), -pos.getZ());
 						if(volume(blockBB) == 0){
 							if(blockBBs.size() == 0)
 								blocks.remove(pos);
@@ -109,7 +111,7 @@ public abstract class BlockDummyableMBB extends BlockDummyable {
 			}
 		}
 		for(BlockPos pos : blocks.keySet()){
-			BlockPos pos1 = pos.add(xx, yy, zz);
+			BlockPos pos1 = pos.offset(xx, yy, zz);
 			int meta = 0;
 			int a = pos1.getX();
 			int b = pos1.getY();
@@ -130,42 +132,42 @@ public abstract class BlockDummyableMBB extends BlockDummyable {
 			} else {
 				continue;
 			}
-			world.setBlockState(pos1, this.getStateFromMeta(meta), 3);
+			world.setBlockAndUpdate(pos1, this.getStateFromMeta(meta));
 		}
 		BlockDummyable.safeRem = false;
 	}
 	
-	public AxisAlignedBB clampToPos(AxisAlignedBB box, BlockPos pos) {
-		AxisAlignedBB b = new AxisAlignedBB(MathHelper.clamp(box.minX, pos.getX(), pos.getX() + 1),
-				MathHelper.clamp(box.minY, pos.getY(), pos.getY() + 1),
-				MathHelper.clamp(box.minZ, pos.getZ(), pos.getZ() + 1),
-				MathHelper.clamp(box.maxX, pos.getX(), pos.getX() + 1),
-				MathHelper.clamp(box.maxY, pos.getY(), pos.getY() + 1),
-				MathHelper.clamp(box.maxZ, pos.getZ(), pos.getZ() + 1));
+	public AABB clampToPos(AABB box, BlockPos pos) {
+		AABB b = new AABB(clamp(box.minX, pos.getX(), pos.getX() + 1),
+				clamp(box.minY, pos.getY(), pos.getY() + 1),
+				clamp(box.minZ, pos.getZ(), pos.getZ() + 1),
+				clamp(box.maxX, pos.getX(), pos.getX() + 1),
+				clamp(box.maxY, pos.getY(), pos.getY() + 1),
+				clamp(box.maxZ, pos.getZ(), pos.getZ() + 1));
 		return b;
 	}
 	
-	public double volume(AxisAlignedBB box){
+	public double volume(AABB box){
 		return (box.maxX-box.minX)*(box.maxY-box.minY)*(box.maxZ-box.minZ);
 	}
 	
-	public static AxisAlignedBB rotate(AxisAlignedBB box, EnumFacing dir) {
+	public static AABB rotate(AABB box, Direction dir) {
 		box = box.offset(-0.5, 0, -0.5);
 		if(box == null)
 			return null;
 		
-		if(dir == EnumFacing.SOUTH)
-			return new AxisAlignedBB(box.minZ, box.minY, -box.minX, box.maxZ, box.maxY, -box.maxX).offset(0.5, 0, 0.5);
+		if(dir == Direction.SOUTH)
+			return new AABB(box.minZ, box.minY, -box.minX, box.maxZ, box.maxY, -box.maxX).offset(0.5, 0, 0.5);
 		
-		if(dir == EnumFacing.NORTH) {
-			return new AxisAlignedBB(-box.minZ, box.minY, box.minX, -box.maxZ, box.maxY, box.maxX).offset(0.5, 0, 0.5);
+		if(dir == Direction.NORTH) {
+			return new AABB(-box.minZ, box.minY, box.minX, -box.maxZ, box.maxY, box.maxX).offset(0.5, 0, 0.5);
 		}
 		
-		if(dir == EnumFacing.EAST) {
-			return new AxisAlignedBB(-box.minX, box.minY, -box.minZ, -box.maxX, box.maxY, -box.maxZ).offset(0.5, 0, 0.5);
+		if(dir == Direction.EAST) {
+			return new AABB(-box.minX, box.minY, -box.minZ, -box.maxX, box.maxY, -box.maxZ).offset(0.5, 0, 0.5);
 		}
 		
-		if(dir == EnumFacing.WEST) {
+		if(dir == Direction.WEST) {
 			return box.offset(0.5, 0, 0.5);
 		}
 		
