@@ -25,40 +25,24 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.potion.HbmPotion;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockLog;
-import net.minecraft.block.BlockSand;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityFallingBlock;
-import net.minecraft.entity.passive.EntitySheep;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.projectile.EntityArrow;
-import net.minecraft.entity.projectile.EntityTippedArrow;
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.MobEffects;
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public class ExplosionChaos {
 
 	private final static Random random = new Random();
 	private static Random rand = new Random();
 
-	public static void explode(World world, int x, int y, int z, int bombStartStrength) {
+	public static void explode(Level world, int x, int y, int z, int bombStartStrength) {
 		if(!CompatibilityConfig.isWarDim(world)){
 			return;
 		}
-		MutableBlockPos pos = new BlockPos.MutableBlockPos();
+		BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 		int r = bombStartStrength;
 		int r2 = r * r;
 		int r22 = r2 / 2;
@@ -72,24 +56,26 @@ public class ExplosionChaos {
 					int Z = zz + z;
 					int ZZ = YY + zz * zz;
 					if(ZZ < r22) {
-						destruction(world, pos.setPos(X, Y, Z));
+						destruction(world, pos.set(X, Y, Z));
 					}
 				}
 			}
 		}
 	}
 
-	public static void destruction(World world, BlockPos pos) {
+	public static void destruction(Level world, BlockPos pos) {
 
 		Block b = world.getBlockState(pos).getBlock();
-		if(b == Blocks.BEDROCK || b == ModBlocks.reinforced_brick || b == ModBlocks.reinforced_sand || b == ModBlocks.reinforced_glass || b == ModBlocks.reinforced_lamp_on || b == ModBlocks.reinforced_lamp_off) {
+		if(b == Blocks.BEDROCK || b == ModBlocks.reinforced_brick || b == ModBlocks.reinforced_sand ||
+				b == ModBlocks.reinforced_glass || b == ModBlocks.reinforced_lamp_on ||
+				b == ModBlocks.reinforced_lamp_off) {
 
 		} else {
-			world.setBlockToAir(pos);
+			world.removeBlock(pos, false);
 		}
 	}
 
-	public static void spawnExplosion(World world, int x, int y, int z, int bound) {
+	public static void spawnExplosion(Level world, int x, int y, int z, int bound) {
 		if(!CompatibilityConfig.isWarDim(world)){
 			return;
 		}
@@ -103,7 +89,8 @@ public class ExplosionChaos {
 			randY = random.nextInt(bound);
 			randZ = random.nextInt(bound);
 
-			world.createExplosion(null, x + randX, y + randY, z + randZ, 10.0F, true);
+			world.explode(null, x + randX, y + randY, z + randZ,
+					10.0F, null);
 			// ExplosionChaos.explode(world, x + randX, y + randY, z + randZ,
 			// 5);
 
@@ -111,7 +98,8 @@ public class ExplosionChaos {
 			randY = random.nextInt(bound);
 			randZ = random.nextInt(bound);
 
-			world.createExplosion(null, x + randX, y - randY, z + randZ, 10.0F, true);
+			world.explode (null, x + randX, y - randY, z + randZ,
+					10.0F, null);
 			// ExplosionChaos.explode(world, x - randX, y + randY, z + randZ,
 			// 5);
 
@@ -119,7 +107,9 @@ public class ExplosionChaos {
 			randY = random.nextInt(bound);
 			randZ = random.nextInt(bound);
 
-			world.createExplosion(null, x + randX, y + randY, z - randZ, 10.0F, true);
+			world.explode (null, x + randX, y + randY, z - randZ, 
+					10.0F, 
+					null);
 			// ExplosionChaos.explode(world, x + randX, y - randY, z + randZ,
 			// 5);
 
@@ -127,14 +117,16 @@ public class ExplosionChaos {
 			randY = random.nextInt(bound);
 			randZ = random.nextInt(bound);
 
-			world.createExplosion(null, x - randX, y + randY, z + randZ, 10.0F, true);
+			world.explode (null, x - randX, y + randY, z + randZ, 
+					10.0F, null);
 			// ExplosionChaos.explode(world, x + randX, y + randY, z - randZ,
 			// 5);
 			randX = random.nextInt(bound);
 			randY = random.nextInt(bound);
 			randZ = random.nextInt(bound);
 
-			world.createExplosion(null, x - randX, y - randY, z + randZ, 10.0F, true);
+			world.explode (null, x - randX, y - randY, z + randZ, 
+					10.0F, null);
 			// ExplosionChaos.explode(world, x - randX, y - randY, z + randZ,
 			// 5);
 
@@ -142,7 +134,8 @@ public class ExplosionChaos {
 			randY = random.nextInt(bound);
 			randZ = random.nextInt(bound);
 
-			world.createExplosion(null, x - randX, y + randY, z - randZ, 10.0F, true);
+			world.explode (null, x - randX, y + randY, z - randZ,
+					10.0F, null);
 			// ExplosionChaos.explode(world, x - randX, y + randY, z - randZ,
 			// 5);
 
@@ -150,7 +143,8 @@ public class ExplosionChaos {
 			randY = random.nextInt(bound);
 			randZ = random.nextInt(bound);
 
-			world.createExplosion(null, x + randX, y - randY, z - randZ, 10.0F, true);
+			world.explode (null, x + randX, y - randY, z - randZ,
+					10.0F, null);
 			// ExplosionChaos.explode(world, x + randX, y - randY, z - randZ,
 			// 5);
 
@@ -158,7 +152,8 @@ public class ExplosionChaos {
 			randY = random.nextInt(bound);
 			randZ = random.nextInt(bound);
 
-			world.createExplosion(null, x - randX, y - randY, z - randZ, 10.0F, true);
+			world.explode (null, x - randX, y - randY, z - randZ,
+					10.0F, null);
 			// ExplosionChaos.explode(world, x - randX, y - randY, z - randZ,
 			// 5);
 		}
@@ -166,7 +161,7 @@ public class ExplosionChaos {
 
 	// Drillgon200: Descriptive method names anyone?
 	// Alcater: Ill write this down - maybe ill need it later. c stands for cloudPoisoning
-	public static void c(World world, int x, int y, int z, int bombStartStrength) {
+	public static void c(Level world, int x, int y, int z, int bombStartStrength) {
 		if(!CompatibilityConfig.isWarDim(world)){
 			return;
 		}
@@ -180,31 +175,32 @@ public class ExplosionChaos {
 		double wat = bombStartStrength * 2;
 
 		bombStartStrength *= 2.0F;
-		i = MathHelper.floor(x - wat - 1.0D);
-		j = MathHelper.floor(x + wat + 1.0D);
-		k = MathHelper.floor(y - wat - 1.0D);
-		int i2 = MathHelper.floor(y + wat + 1.0D);
-		int l = MathHelper.floor(z - wat - 1.0D);
-		int j2 = MathHelper.floor(z + wat + 1.0D);
-		List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(i, k, l, j, i2, j2));
+		i = (int) Math.floor(x - wat - 1.0D);
+		j = (int) Math.floor(x + wat + 1.0D);
+		k = (int) Math.floor(y - wat - 1.0D);
+		int i2 = (int) Math.floor(y + wat + 1.0D);
+		int l = (int) Math.floor(z - wat - 1.0D);
+		int j2 = (int) Math.floor(z + wat + 1.0D);
+		List<Entity> list = world.getEntities(null, new AABB(i, k, l, j, i2, j2));
 
 		for(int i1 = 0; i1 < list.size(); ++i1) {
 			Entity entity = (Entity) list.get(i1);
-			double d4 = entity.getDistance(x, y, z) / bombStartStrength;
+			Vec3 entityPosition = entity.position();
+			double d4 = entityPosition.distanceTo(new Vec3(x, y, z)) / bombStartStrength;
 
 			if(d4 <= 1.0D) {
-				d5 = entity.posX - x;
-				d6 = entity.posY + entity.getEyeHeight() - y;
-				d7 = entity.posZ - z;
-				double d9 = MathHelper.sqrt(d5 * d5 + d6 * d6 + d7 * d7);
+				d5 = entity.position().x - x;
+				d6 = entity.position().y + entity.getEyeHeight() - y;
+				d7 = entity.position().z - z;
+				double d9 = Math.sqrt(d5 * d5 + d6 * d6 + d7 * d7);
 				if(d9 < wat) {
 
-					if(entity instanceof EntityPlayer) {
-						if(!ArmorRegistry.hasProtection((EntityPlayer) entity, EntityEquipmentSlot.HEAD, HazardClass.GAS_CORROSIVE)){
-							ArmorUtil.damageSuit((EntityPlayer) entity, 0, 5);
-							ArmorUtil.damageSuit((EntityPlayer) entity, 1, 5);
-							ArmorUtil.damageSuit((EntityPlayer) entity, 2, 5);
-							ArmorUtil.damageSuit((EntityPlayer) entity, 3, 5);
+					if(entity instanceof Entity) {
+						if(!ArmorRegistry.hasProtection((Entity) entity, EntityEquipmentSlot.HEAD, HazardClass.GAS_CORROSIVE)){
+							ArmorUtil.damageSuit((Entity) entity, 0, 5);
+							ArmorUtil.damageSuit((Entity) entity, 1, 5);
+							ArmorUtil.damageSuit((Entity) entity, 2, 5);
+							ArmorUtil.damageSuit((Entity) entity, 3, 5);
 						}
 					}
 
@@ -233,7 +229,7 @@ public class ExplosionChaos {
 
 	/**
 	 * Sets all flammable blocks on fire
-	 * 
+	 *
 	 * @param world
 	 * @param x
 	 * @param y
@@ -274,7 +270,7 @@ public class ExplosionChaos {
 
 	/**
 	 * Sets all blocks on fire
-	 * 
+	 *
 	 * @param world
 	 * @param x
 	 * @param y
@@ -352,12 +348,12 @@ public class ExplosionChaos {
 		double wat = bombStartStrength * 2;
 
 		bombStartStrength *= 2.0F;
-		i = MathHelper.floor(x - wat - 1.0D);
-		j = MathHelper.floor(x + wat + 1.0D);
-		k = MathHelper.floor(y - wat - 1.0D);
-		int i2 = MathHelper.floor(y + wat + 1.0D);
-		int l = MathHelper.floor(z - wat - 1.0D);
-		int j2 = MathHelper.floor(z + wat + 1.0D);
+		i = Math.floor(x - wat - 1.0D);
+		j = Math.floor(x + wat + 1.0D);
+		k = Math.floor(y - wat - 1.0D);
+		int i2 = Math.floor(y + wat + 1.0D);
+		int l = Math.floor(z - wat - 1.0D);
+		int j2 = Math.floor(z + wat + 1.0D);
 		List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(i, k, l, j, i2, j2));
 
 		for(int i1 = 0; i1 < list.size(); ++i1) {
@@ -368,7 +364,7 @@ public class ExplosionChaos {
 				d5 = entity.posX - x;
 				d6 = entity.posY + entity.getEyeHeight() - y;
 				d7 = entity.posZ - z;
-				double d9 = MathHelper.sqrt(d5 * d5 + d6 * d6 + d7 * d7);
+				double d9 = Math.sqrt(d5 * d5 + d6 * d6 + d7 * d7);
 				if(d9 < wat) {
 
 					if(entity instanceof EntityPlayer) {
@@ -408,12 +404,12 @@ public class ExplosionChaos {
 		double wat = bombStartStrength * 2;
 
 		bombStartStrength *= 2.0F;
-		i = MathHelper.floor(x - wat - 1.0D);
-		j = MathHelper.floor(x + wat + 1.0D);
-		k = MathHelper.floor(y - wat - 1.0D);
-		int i2 = MathHelper.floor(y + wat + 1.0D);
-		int l = MathHelper.floor(z - wat - 1.0D);
-		int j2 = MathHelper.floor(z + wat + 1.0D);
+		i = Math.floor(x - wat - 1.0D);
+		j = Math.floor(x + wat + 1.0D);
+		k = Math.floor(y - wat - 1.0D);
+		int i2 = Math.floor(y + wat + 1.0D);
+		int l = Math.floor(z - wat - 1.0D);
+		int j2 = Math.floor(z + wat + 1.0D);
 		List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(i, k, l, j, i2, j2));
 
 		for(int i1 = 0; i1 < list.size(); ++i1) {
@@ -424,11 +420,11 @@ public class ExplosionChaos {
 				d5 = entity.posX - x;
 				d6 = entity.posY + entity.getEyeHeight() - y;
 				d7 = entity.posZ - z;
-				double d9 = MathHelper.sqrt(d5 * d5 + d6 * d6 + d7 * d7);
+				double d9 = Math.sqrt(d5 * d5 + d6 * d6 + d7 * d7);
 				if(d9 < wat) {
 					if(!(entity instanceof EntityLivingBase))
 						continue;
-					
+
 					EntityLivingBase entityLiving = (EntityLivingBase) entity;
 					if(ArmorRegistry.hasAllProtection(entityLiving, EntityEquipmentSlot.HEAD, HazardClass.NERVE_AGENT)) {
 						ArmorUtil.damageGasMaskFilter(entityLiving, 1);
@@ -699,7 +695,7 @@ public class ExplosionChaos {
 					int Z = zz + z;
 					int ZZ = YY + zz * zz;
 					if(ZZ < r22 + world.rand.nextInt(r22 / 2)) {
-						pos.setPos(X, Y, Z);						
+						pos.setPos(X, Y, Z);
 						Block block =world.getBlockState(pos).getBlock();
 						if(block.getExplosionResistance(null) > 0.1F) continue;
 						if(block != Blocks.BEDROCK && world.getBlockState(pos).getBlock() != ModBlocks.statue_elb
@@ -865,12 +861,12 @@ public class ExplosionChaos {
 		int rand = 0;
 
 		radius *= 2.0F;
-		i = MathHelper.floor(x - wat - 1.0D);
-		j = MathHelper.floor(x + wat + 1.0D);
-		k = MathHelper.floor(y - wat - 1.0D);
-		int i2 = MathHelper.floor(y + wat + 1.0D);
-		int l = MathHelper.floor(z - wat - 1.0D);
-		int j2 = MathHelper.floor(z + wat + 1.0D);
+		i = Math.floor(x - wat - 1.0D);
+		j = Math.floor(x + wat + 1.0D);
+		k = Math.floor(y - wat - 1.0D);
+		int i2 = Math.floor(y + wat + 1.0D);
+		int l = Math.floor(z - wat - 1.0D);
+		int j2 = Math.floor(z + wat + 1.0D);
 		List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(i, k, l, j, i2, j2));
 
 		for(int i1 = 0; i1 < list.size(); ++i1) {
@@ -894,7 +890,7 @@ public class ExplosionChaos {
 					((EntityLiving) entity).setCustomNameTag("jeb_");
 				}
 
-				double d9 = MathHelper.sqrt(d5 * d5 + d6 * d6 + d7 * d7);
+				double d9 = Math.sqrt(d5 * d5 + d6 * d6 + d7 * d7);
 				if(d9 < wat) {
 					entity.setPosition(entity.posX += a, entity.posY += b, entity.posZ += c);
 				}

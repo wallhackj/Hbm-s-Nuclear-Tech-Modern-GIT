@@ -9,12 +9,14 @@ import com.hbm.items.ModItems;
 import com.hbm.items.armor.ItemModCladding;
 import com.hbm.lib.Library;
 import com.hbm.potion.HbmPotion;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import static net.minecraft.world.item.Items.IRON_CHESTPLATE;
+import static net.minecraft.world.item.Items.IRON_HELMET;
+
 
 public class HazmatRegistry {
 	private static Map<Item, Double> entries = new HashMap<>();
@@ -41,8 +43,8 @@ public class HazmatRegistry {
 
 	public static float getCladding(ItemStack stack) {
 
-		if (stack.hasTagCompound() && stack.getTagCompound().getFloat("hfr_cladding") > 0.0F) {
-			return stack.getTagCompound().getFloat("hfr_cladding");
+		if (stack.hasTag() && stack.getTag().getFloat("hfr_cladding") > 0.0F) {
+			return stack.getTag().getFloat("hfr_cladding");
 		} else {
 			if (ArmorModHandler.hasMods(stack)) {
 				ItemStack[] mods = ArmorModHandler.pryMods(stack);
@@ -56,10 +58,12 @@ public class HazmatRegistry {
 		}
 	}
 
-	public static float getResistance(EntityLivingBase player) {
+	public static float getResistance(LivingEntity player) {
 		float res = 0.0F;
 
-		if (player.getUniqueID().toString().equals(Library.HbMinecraft) || player.getUniqueID().toString().equals(Library.Drillgon) || player.getUniqueID().toString().equals(Library.Alcater)) {
+		if (player.getUniqueID().toString().equals(Library.HbMinecraft) ||
+				player.getUniqueID().toString().equals(Library.Drillgon) ||
+				player.getUniqueID().toString().equals(Library.Alcater)) {
 			res += 1.0F;
 		}
 
@@ -218,8 +222,8 @@ public class HazmatRegistry {
 		HazmatRegistry.registerHazmat(ModItems.cobalt_legs, fixRounding(cobalt * legs));
 		HazmatRegistry.registerHazmat(ModItems.cobalt_boots, fixRounding(cobalt * boots));
 
-		HazmatRegistry.registerHazmat(Items.IRON_HELMET, fixRounding(iron * helmet));
-		HazmatRegistry.registerHazmat(Items.IRON_CHESTPLATE, fixRounding(iron * chest));
+		HazmatRegistry.registerHazmat(IRON_HELMET, fixRounding(iron * helmet));
+		HazmatRegistry.registerHazmat(IRON_CHESTPLATE, fixRounding(iron * chest));
 		HazmatRegistry.registerHazmat(Items.IRON_LEGGINGS, fixRounding(iron * legs));
 		HazmatRegistry.registerHazmat(Items.IRON_BOOTS, fixRounding(iron * boots));
 

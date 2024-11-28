@@ -1,11 +1,13 @@
 package com.hbm.config;
 
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.common.ForgeConfigSpec;
+
 import java.util.HashMap;
 import java.util.HashSet;
 
-import net.minecraft.world.World;
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
+
 
 public class CompatibilityConfig {
 
@@ -109,7 +111,7 @@ public class CompatibilityConfig {
 
 
 	
-	public static void loadFromConfig(Configuration config) {
+	public static void loadFromConfig(ForgeConfigSpec config) {
 		final String CATEGORY_DIMRAD = "01_dimension_radiation";
 		final String CATEGORY_DIMORE = "02_dimension_ores";
 		final String CATEGORY_DIMSTRUC = "03_dimension_structures";
@@ -447,14 +449,15 @@ public class CompatibilityConfig {
 		});
 	}
 
-	public static boolean isWarDim(World world){
-		return isWarDim(world.provider.getDimension());
+	public static boolean isWarDim(Level world){
+		return isWarDim(world.dimension());
 	}
 
-	public static boolean isWarDim(int dimID){
-		if(peaceDimensionsIsWhitelist)
-			return !peaceDimensions.contains(dimID);
-		else
-			return peaceDimensions.contains(dimID);
+	public static boolean isWarDim(ResourceKey<Level> dimensionKey) {
+		if (peaceDimensionsIsWhitelist) {
+			return !peaceDimensions.contains(dimensionKey);
+		} else {
+			return peaceDimensions.contains(dimensionKey);
+		}
 	}
 }

@@ -4,11 +4,7 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import com.hbm.items.armor.ItemArmorMod;
-
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.ItemArmor;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.item.ItemStack;
 
 public class ArmorModHandler {
 
@@ -62,7 +58,10 @@ public class ArmorModHandler {
 		
 		ItemArmorMod aMod = (ItemArmorMod)mod.getItem();
 		
-		return (type == EntityEquipmentSlot.HEAD && aMod.helmet) || (type == EntityEquipmentSlot.CHEST && aMod.chestplate) || (type == EntityEquipmentSlot.LEGS && aMod.leggings) || (type == EntityEquipmentSlot.FEET && aMod.boots);
+		return (type == EntityEquipmentSlot.HEAD && aMod.helmet) ||
+				(type == EntityEquipmentSlot.CHEST && aMod.chestplate) ||
+				(type == EntityEquipmentSlot.LEGS && aMod.leggings) ||
+				(type == EntityEquipmentSlot.FEET && aMod.boots);
 	}
 	
 	/**
@@ -76,10 +75,10 @@ public class ArmorModHandler {
 
 		if(mod == null || mod.isEmpty() || armor == null || armor.isEmpty()) return;
 		
-		if(!armor.hasTagCompound())
-			armor.setTagCompound(new NBTTagCompound());
+		if(!armor.hasTag())
+			armor.setTag(new NBTTagCompound());
 		
-		NBTTagCompound nbt = armor.getTagCompound();
+		NBTTagCompound nbt = armor.getTag();
 		
 		if(!nbt.hasKey(MOD_COMPOUND_KEY))
 			nbt.setTag(MOD_COMPOUND_KEY, new NBTTagCompound());
@@ -105,10 +104,10 @@ public class ArmorModHandler {
 		if(armor == null)
 			return;
 		
-		if(!armor.hasTagCompound())
-			armor.setTagCompound(new NBTTagCompound());
+		if(!armor.hasTag())
+			armor.setTag(new NBTTagCompound());
 		
-		NBTTagCompound nbt = armor.getTagCompound();
+		NBTTagCompound nbt = armor.getTag();
 		
 		if(!nbt.hasKey(MOD_COMPOUND_KEY))
 			nbt.setTag(MOD_COMPOUND_KEY, new NBTTagCompound());
@@ -127,13 +126,13 @@ public class ArmorModHandler {
 	 */
 	public static void clearMods(ItemStack armor) {
 		
-		if(!armor.hasTagCompound())
+		if(!armor.hasTag())
 			return;
 		
-		NBTTagCompound nbt = armor.getTagCompound();
+		NBTTagCompound nbt = armor.getTag();
 		nbt.removeTag(MOD_COMPOUND_KEY);
 		if(nbt.hasNoTags())
-			armor.setTagCompound(null);
+			armor.setTag(null);
 	}
 	
 	/**
@@ -143,10 +142,10 @@ public class ArmorModHandler {
 	 */
 	public static boolean hasMods(ItemStack armor) {
 		
-		if(!armor.hasTagCompound())
+		if(!armor.hasTag())
 			return false;
 		
-		return armor.getTagCompound().hasKey(MOD_COMPOUND_KEY);
+		return armor.getTag().hasKey(MOD_COMPOUND_KEY);
 	}
 	
 	public static ItemStack[] pryMods(ItemStack armor) {
@@ -158,7 +157,7 @@ public class ArmorModHandler {
 			return slots;
 		}
 		
-		NBTTagCompound nbt = armor.getTagCompound();
+		NBTTagCompound nbt = armor.getTag();
 		NBTTagCompound mods = nbt.getCompoundTag(MOD_COMPOUND_KEY);
 		
 		for(int i = 0; i < 8; i++) {
@@ -176,7 +175,7 @@ public class ArmorModHandler {
 	public static ItemStack pryMod(ItemStack armor, int slot){
 		if(!hasMods(armor))
 			return ItemStack.EMPTY;
-		NBTTagCompound nbt = armor.getTagCompound();
+		NBTTagCompound nbt = armor.getTag();
 		NBTTagCompound mods = nbt.getCompoundTag(MOD_COMPOUND_KEY);
 		
 		NBTTagCompound cmp = mods.getCompoundTag(MOD_SLOT_KEY + slot);

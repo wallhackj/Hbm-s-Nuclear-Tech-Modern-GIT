@@ -6,100 +6,106 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.config.GeneralConfig;
 import com.hbm.explosion.ExplosionChaos;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.MobEffects;
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
-import net.minecraft.world.World;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+
+import static net.minecraft.world.level.block.Blocks.AIR;
 
 public class CheaterVirus extends Block {
 
 	static boolean protect = true;
 
-	public CheaterVirus(Material materialIn, String s) {
-		super(materialIn);
-		this.setUnlocalizedName(s);
-		this.setRegistryName(s);
-		this.setTickRandomly(true);
+	public CheaterVirus(BlockBehaviour materialIn, String s) {
+		super(Properties.copy(materialIn));
+//		this.setUnlocalizedName(s);
+//		this.setRegistryName(s);
+//		this.setTickRandomly(true);
 
 		ModBlocks.ALL_BLOCKS.add(this);
 	}
 
-	@Override
-	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
-		super.breakBlock(worldIn, pos, state);
+//	@Override
+	public void breakBlock(Level worldIn, BlockPos pos, BlockState state) {
+		super.destroy(worldIn, pos, state);
 		if(CheaterVirus.protect)
-			worldIn.setBlockState(pos, state, 2);
+			worldIn.setBlockAndUpdate(pos, state);
 	}
 
-	@Override
-	public void updateTick(World world, BlockPos pos1, IBlockState state, Random rand) {
+//	@Override
+	public void updateTick(Level world, BlockPos pos1, BlockState state, Random rand) {
 		if(GeneralConfig.enableVirus) {
 			int x = pos1.getX();
 			int y = pos1.getY();
 			int z = pos1.getZ();
-			MutableBlockPos pos = new BlockPos.MutableBlockPos();
-			if(world.getBlockState(pos.setPos(x + 1, y, z)).getBlock() != ModBlocks.cheater_virus && world.getBlockState(pos.setPos(x + 1, y, z)).getBlock() != Blocks.AIR && world.getBlockState(pos.setPos(x + 1, y, z)).getBlock() != ModBlocks.cheater_virus) {
-				world.setBlockState(pos.setPos(x + 1, y, z), ModBlocks.cheater_virus.getDefaultState());
+			BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+			if(world.getBlockState(pos.set(x + 1, y, z)).getBlock() != ModBlocks.cheater_virus &&
+					world.getBlockState(pos.set(x + 1, y, z)).getBlock() != AIR &&
+					world.getBlockState(pos.set(x + 1, y, z)).getBlock() != ModBlocks.cheater_virus) {
+				world.setBlockAndUpdate(pos.set(x + 1, y, z), ModBlocks.cheater_virus.defaultBlockState());
 				;
 			}
 
-			if(world.getBlockState(pos.setPos(x, y + 1, z)).getBlock() != ModBlocks.cheater_virus && world.getBlockState(pos.setPos(x, y + 1, z)).getBlock() != Blocks.AIR && world.getBlockState(pos.setPos(x, y + 1, z)).getBlock() != ModBlocks.cheater_virus) {
-				world.setBlockState(pos.setPos(x, y + 1, z), ModBlocks.cheater_virus.getDefaultState());
+			if(world.getBlockState(pos.set(x, y + 1, z)).getBlock() != ModBlocks.cheater_virus && world.getBlockState(pos.set(x, y + 1, z)).getBlock() != Blocks.AIR && world.getBlockState(pos.set(x, y + 1, z)).getBlock() != ModBlocks.cheater_virus) {
+				world.setBlockAndUpdate(pos.set(x, y + 1, z), ModBlocks.cheater_virus.defaultBlockState());
 				;
 			}
 
-			if(world.getBlockState(pos.setPos(x, y, z + 1)).getBlock() != ModBlocks.cheater_virus && world.getBlockState(pos.setPos(x, y, z + 1)).getBlock() != Blocks.AIR && world.getBlockState(pos.setPos(x, y, z + 1)).getBlock() != ModBlocks.cheater_virus) {
-				world.setBlockState(pos.setPos(x, y, z + 1), ModBlocks.cheater_virus.getDefaultState());
+			if(world.getBlockState(pos.set(x, y, z + 1)).getBlock() != ModBlocks.cheater_virus && world.getBlockState(pos.set(x, y, z + 1)).getBlock() != Blocks.AIR && world.getBlockState(pos.set(x, y, z + 1)).getBlock() != ModBlocks.cheater_virus) {
+				world.setBlockAndUpdate(pos.set(x, y, z + 1), ModBlocks.cheater_virus.defaultBlockState());
 				;
 			}
 
-			if(world.getBlockState(pos.setPos(x - 1, y, z)).getBlock() != ModBlocks.cheater_virus && world.getBlockState(pos.setPos(x - 1, y, z)).getBlock() != Blocks.AIR && world.getBlockState(pos.setPos(x - 1, y, z)).getBlock() != ModBlocks.cheater_virus) {
-				world.setBlockState(pos.setPos(x - 1, y, z), ModBlocks.cheater_virus.getDefaultState());
+			if(world.getBlockState(pos.set(x - 1, y, z)).getBlock() != ModBlocks.cheater_virus &&
+					world.getBlockState(pos.set(x - 1, y, z)).getBlock() != AIR && world.getBlockState(pos.set(x - 1, y, z)).getBlock() != ModBlocks.cheater_virus) {
+				world.setBlockAndUpdate(pos.set(x - 1, y, z), ModBlocks.cheater_virus.defaultBlockState());
 				;
 			}
 
-			if(world.getBlockState(pos.setPos(x, y - 1, z)).getBlock() != ModBlocks.cheater_virus && world.getBlockState(pos.setPos(x, y - 1, z)).getBlock() != Blocks.AIR && world.getBlockState(pos.setPos(x, y - 1, z)).getBlock() != ModBlocks.cheater_virus) {
-				world.setBlockState(pos.setPos(x, y - 1, z), ModBlocks.cheater_virus.getDefaultState());
+			if(world.getBlockState(pos.set(x, y - 1, z)).getBlock() != ModBlocks.cheater_virus &&
+					world.getBlockState(pos.set(x, y - 1, z)).getBlock() != AIR &&
+					world.getBlockState(pos.set(x, y - 1, z)).getBlock() != ModBlocks.cheater_virus) {
+				world.setBlockAndUpdate(pos.set(x, y - 1, z), ModBlocks.cheater_virus.defaultBlockState());
 				;
 			}
 
-			if(world.getBlockState(pos.setPos(x, y, z - 1)).getBlock() != ModBlocks.cheater_virus && world.getBlockState(pos.setPos(x, y, z - 1)).getBlock() != Blocks.AIR && world.getBlockState(pos.setPos(x, y, z - 1)).getBlock() != ModBlocks.cheater_virus) {
-				world.setBlockState(pos.setPos(x, y, z - 1), ModBlocks.cheater_virus.getDefaultState());
+			if(world.getBlockState(pos.set(x, y, z - 1)).getBlock() != ModBlocks.cheater_virus && world.getBlockState(pos.set(x, y, z - 1)).getBlock() != Blocks.AIR && world.getBlockState(pos.set(x, y, z - 1)).getBlock() != ModBlocks.cheater_virus) {
+				world.setBlockAndUpdate(pos.set(x, y, z - 1), ModBlocks.cheater_virus.defaultBlockState());
 				;
 			}
 
 			protect = false;
-			world.setBlockState(pos.setPos(x, y, z), Blocks.AIR.getDefaultState());
+			world.setBlockAndUpdate(pos.set(x, y, z), AIR.defaultBlockState());
 			protect = true;
 		}
 	}
 
-	@Override
-	public void neighborChanged(IBlockState state, World world, BlockPos pos1, Block blockIn, BlockPos fromPos) {
+//	@Override
+	public void neighborChanged(BlockState state, Level world, BlockPos pos1, Block blockIn, BlockPos fromPos) {
 		int x = pos1.getX();
 		int y = pos1.getY();
 		int z = pos1.getZ();
-		MutableBlockPos pos = new BlockPos.MutableBlockPos();
-		if((world.getBlockState(pos.setPos(x + 1, y, z)).getBlock() == Blocks.AIR || world.getBlockState(pos.setPos(x + 1, y, z)).getBlock() == ModBlocks.cheater_virus || world.getBlockState(pos.setPos(x + 1, y, z)).getBlock() == ModBlocks.cheater_virus_seed) && (world.getBlockState(pos.setPos(x - 1, y, z)).getBlock() == Blocks.AIR || world.getBlockState(pos.setPos(x - 1, y, z)).getBlock() == ModBlocks.cheater_virus || world.getBlockState(pos.setPos(x - 1, y, z)).getBlock() == ModBlocks.cheater_virus_seed) && (world.getBlockState(pos.setPos(x, y + 1, z)).getBlock() == Blocks.AIR || world.getBlockState(pos.setPos(x, y + 1, z)).getBlock() == ModBlocks.cheater_virus || world.getBlockState(pos.setPos(x, y + 1, z)).getBlock() == ModBlocks.cheater_virus_seed)
-				&& (world.getBlockState(pos.setPos(x, y - 1, z)).getBlock() == Blocks.AIR || world.getBlockState(pos.setPos(x, y - 1, z)).getBlock() == ModBlocks.cheater_virus || world.getBlockState(pos.setPos(x, y - 1, z)).getBlock() == ModBlocks.cheater_virus_seed) && (world.getBlockState(pos.setPos(x, y, z + 1)).getBlock() == Blocks.AIR || world.getBlockState(pos.setPos(x, y, z + 1)).getBlock() == ModBlocks.cheater_virus || world.getBlockState(pos.setPos(x, y, z + 1)).getBlock() == ModBlocks.cheater_virus_seed) && (world.getBlockState(pos.setPos(x, y, z - 1)).getBlock() == Blocks.AIR || world.getBlockState(pos.setPos(x, y, z - 1)).getBlock() == ModBlocks.cheater_virus || world.getBlockState(pos.setPos(x, y, z - 1)).getBlock() == ModBlocks.cheater_virus_seed) && !world.isRemote) {
+		BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+		if((world.getBlockState(pos.set(x + 1, y, z)).getBlock() == Blocks.AIR || world.getBlockState(pos.set(x + 1, y, z)).getBlock() == ModBlocks.cheater_virus || world.getBlockState(pos.set(x + 1, y, z)).getBlock() == ModBlocks.cheater_virus_seed) && (world.getBlockState(pos.set(x - 1, y, z)).getBlock() == Blocks.AIR || world.getBlockState(pos.set(x - 1, y, z)).getBlock() == ModBlocks.cheater_virus || world.getBlockState(pos.set(x - 1, y, z)).getBlock() == ModBlocks.cheater_virus_seed) && (world.getBlockState(pos.set(x, y + 1, z)).getBlock() == Blocks.AIR || world.getBlockState(pos.set(x, y + 1, z)).getBlock() == ModBlocks.cheater_virus || world.getBlockState(pos.set(x, y + 1, z)).getBlock() == ModBlocks.cheater_virus_seed)
+				&& (world.getBlockState(pos.set(x, y - 1, z)).getBlock() == Blocks.AIR || world.getBlockState(pos.set(x, y - 1, z)).getBlock() == ModBlocks.cheater_virus || world.getBlockState(pos.set(x, y - 1, z)).getBlock() == ModBlocks.cheater_virus_seed) && (world.getBlockState(pos.set(x, y, z + 1)).getBlock() == Blocks.AIR || world.getBlockState(pos.set(x, y, z + 1)).getBlock() == ModBlocks.cheater_virus || world.getBlockState(pos.set(x, y, z + 1)).getBlock() == ModBlocks.cheater_virus_seed) && (world.getBlockState(pos.set(x, y, z - 1)).getBlock() == Blocks.AIR || world.getBlockState(pos.set(x, y, z - 1)).getBlock() == ModBlocks.cheater_virus || world.getBlockState(pos.set(x, y, z - 1)).getBlock() == ModBlocks.cheater_virus_seed) && !world.isRemote) {
 			protect = false;
-			world.setBlockState(pos.setPos(x, y, z), Blocks.AIR.getDefaultState());
+			world.setBlockAndUpdate(pos.set(x, y, z), Blocks.AIR.defaultBlockState());
 			ExplosionChaos.spreadVirus(world, x, y, z, 5);
 			protect = true;
 		}
 	}
 
-	@Override
-	public void onEntityWalk(World worldIn, BlockPos pos, Entity entityIn) {
-		if(entityIn instanceof EntityLivingBase) {
-			((EntityLivingBase) entityIn).addPotionEffect(new PotionEffect(MobEffects.WITHER, 60 * 60 * 60, 9));
+//	@Override
+	public void onEntityWalk(Level worldIn, BlockPos pos, Entity entityIn) {
+		if(entityIn instanceof LivingEntity) {
+//			((LivingEntity) entityIn).addPotionEffect(new PotionEffect(MobEffects.WITHER, 60 * 60 * 60, 9));
 		}
 	}
 

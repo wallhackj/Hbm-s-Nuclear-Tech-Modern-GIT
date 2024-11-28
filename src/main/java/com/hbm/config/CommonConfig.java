@@ -2,51 +2,74 @@ package com.hbm.config;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 import com.hbm.main.MainRegistry;
 
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
+import net.minecraftforge.common.ForgeConfigSpec;
 
 public class CommonConfig {
 
-	public static boolean createConfigBool(Configuration config, String category, String name, String comment, boolean def) {
-	
-	    Property prop = config.get(category, name, def);
-	    prop.setComment(comment);
-	    return prop.getBoolean();
+	public static boolean createConfigBool(ForgeConfigSpec config, String category, String name, String comment,
+										   boolean def) {
+		ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+		builder.push(category);
+		ForgeConfigSpec.BooleanValue value = builder
+				.comment(comment)
+				.define(name, def);
+		builder.pop();
+		return value.get();
 	}
 	
-	public static String createConfigString(Configuration config, String category, String name, String comment, String def) {
-
-		Property prop = config.get(category, name, def);
-		prop.setComment(comment);
-		return prop.getString();
+	public static String createConfigString(ForgeConfigSpec  config, String category, String name, String comment,
+											String def) {
+		ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+		builder.push(category);
+		ForgeConfigSpec.ConfigValue<String> value = builder
+				.comment(comment)
+				.define(name, def);
+		builder.pop();
+		return value.get();
 	}
 
-	public static String[] createConfigStringList(Configuration config, String category, String name, String comment, String[] defaultValues) {
-
-		Property prop = config.get(category, name, defaultValues);
-		prop.setComment(comment);
-		return prop.getStringList();
+	public static String[] createConfigStringList(ForgeConfigSpec config, String category, String name,
+												  String comment, String[] defaultValues) {
+		ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+		builder.push(category);
+		ForgeConfigSpec.ConfigValue<List<? extends String>> value = builder.comment(comment)
+				.defineList(name, List.of(defaultValues),
+						obj -> obj instanceof String);
+		builder.pop();
+		return value.get().toArray(new String[0]);
 	}
 
-	public static HashMap createConfigHashMap(Configuration config, String category, String name, String comment, String keyType, String valueType, String[] defaultValues, String splitReg) {
+	public static HashMap createConfigHashMap(ForgeConfigSpec  config, String category, String name, String comment, String keyType, String valueType, String[] defaultValues, String splitReg) {
+		ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 		HashMap<Object, Object> configDictionary = new HashMap<>();
-		Property prop = config.get(category, name, defaultValues);
-		prop.setComment(comment);
-		for(String entry: prop.getStringList()){
+		builder.push(category);
+		ForgeConfigSpec.ConfigValue<List<? extends String>> value = builder
+				.comment(comment)
+				.defineList(name, List.of(defaultValues),
+						obj -> obj instanceof String);
+		builder.pop();
+		for (String entry : value.get()) {
 			String[] pairs = entry.split(splitReg, 0);
 			configDictionary.put(parseType(pairs[0], keyType), parseType(pairs[1], valueType));
 		}
 		return configDictionary;
 	}
 
-	public static HashSet createConfigHashSet(Configuration config, String category, String name, String comment, String valueType, String[] defaultValues) {
+	public static HashSet createConfigHashSet(ForgeConfigSpec  config, String category, String name,
+											  String comment, String valueType, String[] defaultValues) {
+		ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 		HashSet<Object> configSet = new HashSet<>();
-		Property prop = config.get(category, name, defaultValues);
-		prop.setComment(comment);
-		for(String entry: prop.getStringList()){
+		builder.push(category);
+		ForgeConfigSpec.ConfigValue<List<? extends String>> value = builder
+				.comment(comment)
+				.defineList(name, List.of(defaultValues),
+						obj -> obj instanceof String);
+		builder.pop();
+		for (String entry : value.get()) {
 			configSet.add(parseType(entry, valueType));
 		}
 		return configSet;
@@ -68,25 +91,33 @@ public class CommonConfig {
 		return value;
 	}
 
-	public static int createConfigInt(Configuration config, String category, String name, String comment, int def) {
-	
-	    Property prop = config.get(category, name, def);
-	    prop.setComment(comment);
-	    return prop.getInt();
+	public static int createConfigInt(ForgeConfigSpec config, String category, String name, String comment,
+									  int def) {
+		ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+		builder.push(category);
+		ForgeConfigSpec.IntValue value = builder
+				.comment(comment)
+				.defineInRange(name, def, Integer.MIN_VALUE, Integer.MAX_VALUE);
+		builder.pop();
+		return value.get();
 	}
 
-	public static double createConfigDouble(Configuration config, String category, String name, String comment, double def) {
-	
-	    Property prop = config.get(category, name, def);
-	    prop.setComment(comment);
-	    return prop.getDouble();
+	public static double createConfigDouble(ForgeConfigSpec  config, String category, String name,
+											String comment, double def) {
+		ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+		builder.push(category);
+		ForgeConfigSpec.DoubleValue value = builder
+				.comment(comment)
+				.defineInRange(name, def, Double.MIN_VALUE, Double.MAX_VALUE);
+		builder.pop();
+		return value.get();
 	}
 
 	public static int setDefZero(int value, int def) {
 
 		if(value < 0) {
 			MainRegistry.logger.error("Fatal error config: Randomizer value has been below zero, despite bound having to be positive integer!");
-			MainRegistry.logger.error(String.format("Errored value will default back to %d, PLEASE REVIEW CONFIGURATION DESCRIPTION BEFORE MEDDLING WITH VALUES!", def));
+			MainRegistry.logger.error(String.format("Errored value will default back to %d, PLEASE REVIEW ForgeConfigSpec  DESCRIPTION BEFORE MEDDLING WITH VALUES!", def));
 			return def;
 		}
 
@@ -97,7 +128,7 @@ public class CommonConfig {
 	
 		if(value <= 0) {
 			MainRegistry.logger.error("Fatal error config: Randomizer value has been set to zero, despite bound having to be positive integer!");
-			MainRegistry.logger.error(String.format("Errored value will default back to %d, PLEASE REVIEW CONFIGURATION DESCRIPTION BEFORE MEDDLING WITH VALUES!", def));
+			MainRegistry.logger.error(String.format("Errored value will default back to %d, PLEASE REVIEW ForgeConfigSpec  DESCRIPTION BEFORE MEDDLING WITH VALUES!", def));
 			return def;
 		}
 	

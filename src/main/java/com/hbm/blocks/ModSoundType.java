@@ -1,7 +1,8 @@
 package com.hbm.blocks;
 
-import net.minecraft.block.SoundType;
-import net.minecraft.util.SoundEvent;
+
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.level.block.SoundType;
 
 public class ModSoundType extends SoundType {
 
