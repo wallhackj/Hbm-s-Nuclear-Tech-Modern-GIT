@@ -144,24 +144,23 @@ public class ArmorUtil {
 	};
 
 	public static void damageSuit(Player player, int slot, int amount) {
-	
-		if(player.inventory.armorInventory.get(slot) == ItemStack.EMPTY)
+		ItemStack armor = player.getInventory().armor.get(slot);
+		if(armor == ItemStack.EMPTY)
 			return;
 	
-		int j = player.inventory.armorInventory.get(slot).getItemDamage();
-		player.inventory.armorInventory.get(slot).setItemDamage(j += amount);
+		int j = armor.getDamageValue();
+		armor.setDamageValue(j += amount);
 	
-		if(player.inventory.armorInventory.get(slot).getItemDamage() >= player.inventory.armorInventory.get(slot).getMaxDamage()) {
-			player.inventory.armorInventory.set(slot, ItemStack.EMPTY);
+		if(armor.getDamageValue() >= armor.getMaxDamage()) {
+			player.getInventory().armor.set(slot, ItemStack.EMPTY);
 		}
 	}
 	
-	@SuppressWarnings("deprecation")
 	public static void resetFlightTime(Player player) {
-		if(player instanceof EntityPlayerMP) {
-			EntityPlayerMP mp = (EntityPlayerMP) player;
-			ReflectionHelper.setPrivateValue(NetHandlerPlayServer.class, mp.connection, 0, "floatingTickCount", "field_147365_f");
-		}
+//		if(player instanceof EntityPlayerMP) {
+//			EntityPlayerMP mp = (EntityPlayerMP) player;
+//			ReflectionHelper.setPrivateValue(NetHandlerPlayServer.class, mp.connection, 0, "floatingTickCount", "field_147365_f");
+//		}
 	}
 
 	public static boolean checkForFiend2(Player player) {
@@ -235,8 +234,8 @@ public class ArmorUtil {
 			return true;
 		}
 
-		if(player.isPotionActive(HbmPotion.mutation))
-			return true;
+//		if(player.isisPotionActive(HbmPotion.mutation))
+//			return true;
 
 		return false;
 	}
@@ -254,13 +253,8 @@ public class ArmorUtil {
     }
 
 	public static boolean checkArmorPiece(Player player, Item armor, int slot) {
-		if(player.inventory.armorInventory.get(slot) != null &&
-				player.inventory.armorInventory.get(slot).getItem() == armor) {
-			return true;
-		}
-
-		return false;
-	}
+        return armor != null && armor.asItem() == armor;
+    }
 
 	/*
 	 * Default implementations for IGasMask items
@@ -367,8 +361,8 @@ public class ArmorUtil {
 		if(checkArmor(player, ModItems.dns_helmet, ModItems.dns_plate, ModItems.dns_legs, ModItems.dns_boots))
 			return true;
 
-		if(player.isPotionActive(HbmPotion.stability))
-			return true;
+//		if(player.isPotionActive(HbmPotion.stability))
+//			return true;
 
 		return false;
 	}
@@ -388,10 +382,10 @@ public class ArmorUtil {
 		if(checkArmorPiece(player, ModItems.liquidator_helmet, 3))
 			return true;
 
-		if(player.isPotionActive(HbmPotion.mutation))
-			return true;
+//		if(player.isPotionActive(HbmPotion.mutation))
+//			return true;
 
-		ItemStack helmet = player.inventory.armorInventory.get(3);
+		ItemStack helmet = player.getInventory().armor.get(3);
 		if(helmet != null && ArmorModHandler.hasMods(helmet)) {
 
 			ItemStack mods[] = ArmorModHandler.pryMods(helmet);
@@ -490,7 +484,7 @@ public class ArmorUtil {
 
 		List<Component> lore = new ArrayList();
 		list.add("  " + filter.getDisplayName() + append);
-		filter.getItem().addInformation(filter, world, lore, flagIn);
+		filter.getItem().appendHoverText(filter, world, lore, flagIn);
 		ForgeEventFactory.onItemTooltip(filter, null, lore, flagIn);
 		lore.forEach(x -> list.add("§e  " + x));
 	}
