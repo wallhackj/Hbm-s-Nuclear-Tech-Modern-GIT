@@ -45,7 +45,7 @@ public class BlockCrashedBomb extends BlockContainer implements IBomb {
 
 	@Override
 	public void onBlockPlacedBy(Level worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
-		worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()));
+		worldIn.setBlockAndUpdate(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()));
 	}
 
 	@Override
@@ -53,18 +53,18 @@ public class BlockCrashedBomb extends BlockContainer implements IBomb {
 									Direction facing, float hitX, float hitY, float hitZ) {
 		if(world.isClientSide)
 			return true;
-		Item tool = player.getHeldItem(hand).getItem();
+		Item tool = player.getItemInHand(hand).getItem();
 		if (tool == ModItems.defuser || tool == ModItems.defuser_desh) {
-			if(tool.getMaxDamage(player.getHeldItem(hand)) > 0)
-					player.getHeldItem(hand).damageItem(1, player);
+			if(tool.getMaxDamage(player.getItemInHand(hand)) > 0)
+					player.getItemInHand(hand).setDamageValue(1);
 			world.destroyBlock(pos, false);
 
 			world.spawnEntity(new EntityItem(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
 					new ItemStack(ModItems.egg_balefire_shard)));
 			world.spawnEntity(new EntityItem(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-					new ItemStack(ModItems.plate_steel, 10 + world.rand.nextInt(15))));
+					new ItemStack(ModItems.plate_steel, 10 + world.random.nextInt(15))));
 			world.spawnEntity(new EntityItem(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-					new ItemStack(ModItems.plate_titanium, 2 + world.rand.nextInt(7))));
+					new ItemStack(ModItems.plate_titanium, 2 + world.random.nextInt(7))));
 
 			return true;
 		}
@@ -128,7 +128,7 @@ public class BlockCrashedBomb extends BlockContainer implements IBomb {
 
 	@Override
 	public BlockState withRotation(BlockState state, Rotation rot) {
-		return state.withProperty(FACING, rot.rotate((Direction) state.getValue(FACING)));
+		return state.setValue(FACING, rot.rotate((Direction) state.getValue(FACING)));
 	}
 
 	@Override
@@ -156,7 +156,8 @@ public class BlockCrashedBomb extends BlockContainer implements IBomb {
 			world.spawnEntity(bf);
 
 			if(BombConfig.enableNukeClouds) {
-				EntityNukeTorex.statFacBale(world, pos.getX() + 0.5, pos.getY() + 5, pos.getZ() + 0.5, (int) (BombConfig.fatmanRadius * 1.25));
+				EntityNukeTorex.statFacBale(world, pos.getX() + 0.5, pos.getY() + 5, pos.getZ() + 0.5,
+						(int) (BombConfig.fatmanRadius * 1.25));
 			}
         }
 	}

@@ -10,10 +10,10 @@ import com.hbm.entity.projectile.EntityLaserBeam;
 import com.hbm.entity.projectile.EntityMinerBeam;
 import com.hbm.entity.projectile.EntityPlasmaBeam;
 import com.hbm.entity.projectile.EntityRainbow;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.entity.Entity;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EntityDamageSourceIndirect;
 
 public class ModDamageSource extends DamageSource {
     public static DamageSource nuclearBlast = (new DamageSource("nuclearBlast")).setExplosion();

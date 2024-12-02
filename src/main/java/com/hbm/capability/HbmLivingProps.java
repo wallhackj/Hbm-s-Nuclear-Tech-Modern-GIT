@@ -10,11 +10,15 @@ import com.hbm.lib.ModDamageSource;
 import com.hbm.main.AdvancementManager;
 import com.hbm.packet.AuxParticlePacketNT;
 import com.hbm.packet.PacketDispatcher;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.biome.Climate;
+import net.minecraft.world.level.block.Blocks;
+
+import static net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH;
 
 
 public class HbmLivingProps {
@@ -22,8 +26,9 @@ public class HbmLivingProps {
 	public static final UUID digamma_UUID = UUID.fromString("2a3d8aec-5ab9-4218-9b8b-ca812bdf378b");
 
 	public static IEntityHbmProps getData(LivingEntity entity){
-		return entity.hasCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null) ?
-                (IEntityHbmProps) entity.getCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null) :
+		return entity.getCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null) ?
+                (IEntityHbmProps) entity.getCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP,
+						null) :
 				HbmLivingCapability.EntityHbmPropsProvider.DUMMY;
 	}
 
@@ -87,32 +92,31 @@ public class HbmLivingProps {
 
 		float healthMod = (float)Math.pow(0.5, digamma) - 1F;
 
-		AttributeInstance attributeinstance = entity.getAttributeMap()
-				.getAttributeInstance(SharedMonsterAttributes.MAX_HEALTH);
+		AttributeInstance attributeinstance = entity.getAttributes().getInstance(MAX_HEALTH);
 
 		try {
 			attributeinstance.removeModifier(attributeinstance.getModifier(digamma_UUID));
 		} catch(Exception ex) {
 		}
 
-		attributeinstance.applyModifier(new AttributeModifier(digamma_UUID, "digamma", healthMod, 2));
+		attributeinstance.addPermanentModifier(new AttributeModifier(digamma_UUID, "digamma", healthMod, AttributeModifier.Operation.fromValue(2)));
 
 		if(entity.getHealth() > entity.getMaxHealth()) {
 			entity.setHealth(entity.getMaxHealth());
 		}
 
-		if((entity.getMaxHealth() <= 0 || digamma >= 10.0F) && entity.isEntityAlive()) {
+		if((entity.getMaxHealth() <= 0 || digamma >= 10.0F) && entity.isAlive()) {
 			entity.setAbsorptionAmount(0);
-			entity.attackEntityFrom(ModDamageSource.digamma, 5000000F);
+			entity.hurt(ModDamageSource.digamma, 5000000F);
 			entity.setHealth(0);
-			entity.onDeath(ModDamageSource.digamma);
+			entity.die(ModDamageSource.digamma);
 
-			NBTTagCompound data = new NBTTagCompound();
-			data.setString("type", "sweat");
-			data.setInteger("count", 50);
-			data.setInteger("block", Block.getIdFromBlock(Blocks.SOUL_SAND));
-			data.setInteger("entity", entity.getEntityId());
-			PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, 0, 0, 0), 
+			CompoundTag data = new CompoundTag();
+			data.putString("type", "sweat");
+			data.putInt("count", 50);
+			data.putInt("block", Block.getIdFromBlock(Blocks.SOUL_SAND));
+			data.putInt("entity", entity.getId());
+			PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, 0, 0, 0),
 					new Climate.TargetPoint(entity.dimension, entity.posX, entity.posY, entity.posZ, 50));
 		}
 
@@ -150,7 +154,7 @@ public class HbmLivingProps {
 
 		if(asbestos >= EntityHbmProps.maxAsbestos) {
 			getData(entity).setAsbestos(0);
-			entity.attackEntityFrom(ModDamageSource.asbestos, 1000);
+			entity.hurt(ModDamageSource.asbestos, 1000);
 		}
 	}
 
@@ -172,7 +176,7 @@ public class HbmLivingProps {
 
 		if(blacklung >= EntityHbmProps.maxBlacklung) {
 			getData(entity).setBlacklung(0);
-			entity.attackEntityFrom(ModDamageSource.blacklung, 1000);
+			entity.hurt(ModDamageSource.blacklung, 1000);
 		}
 	}
 
@@ -219,20 +223,20 @@ public class HbmLivingProps {
 			return maxRad * ((float)time / (float)maxTime);
 		}
 
-		public void save(NBTTagCompound nbt, int index){
-			NBTTagCompound me = new NBTTagCompound();
-			me.setFloat("maxRad", this.maxRad);
-			me.setInteger("maxTime", this.maxTime);
-			me.setInteger("time", this.time);
-			me.setBoolean("ignoreArmor", ignoreArmor);
-			nbt.setTag("cont_" + index, me);
+		public void save(CompoundTag nbt, int index){
+			CompoundTag me = new CompoundTag();
+			me.putFloat("maxRad", this.maxRad);
+			me.putInt("maxTime", this.maxTime);
+			me.putInt("time", this.time);
+			me.putBoolean("ignoreArmor", ignoreArmor);
+			nbt.put("cont_" + index, me);
 		}
 
-		public static ContaminationEffect load(NBTTagCompound nbt, int index){
-			NBTTagCompound me = (NBTTagCompound)nbt.getTag("cont_" + index);
+		public static ContaminationEffect load(CompoundTag nbt, int index){
+			CompoundTag me = (CompoundTag)nbt.get("cont_" + index);
 			float maxRad = me.getFloat("maxRad");
-			int maxTime = nbt.getInteger("maxTime");
-			int time = nbt.getInteger("time");
+			int maxTime = nbt.getInt("maxTime");
+			int time = nbt.getInt("time");
 			boolean ignoreArmor = nbt.getBoolean("ignoreArmor");
 
 			ContaminationEffect effect = new ContaminationEffect(maxRad, maxTime, ignoreArmor);

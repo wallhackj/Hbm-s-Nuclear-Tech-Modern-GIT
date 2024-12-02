@@ -7,22 +7,21 @@ import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.TEPressPacket;
 import com.hbm.tileentity.TileEntityMachineBase;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntityFurnace;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ITickable;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.AxisAlignedBB;
+
+import net.minecraft.client.renderer.texture.Tickable;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.biome.Climate;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+
 import net.minecraftforge.items.ItemStackHandler;
 
-public class TileEntityMachinePress extends TileEntityMachineBase implements ITickable, ICapabilityProvider {
+public class TileEntityMachinePress extends TileEntityMachineBase implements Tickable, ICapabilityProvider {
 
 	public int progress = 0;
 	public int power = 0;
@@ -54,34 +53,34 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements ITi
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound nbt) {
+	public void readFromNBT(CompoundTag nbt) {
 		super.readFromNBT(nbt);
 
-		progress = nbt.getInteger("progress");
+		progress = nbt.getInt("progress");
 		detectProgress = progress + 1;
-		power = nbt.getInteger("power");
+		power = nbt.getInt("power");
 		detectPower = power + 1;
-		burnTime = nbt.getInteger("burnTime");
+		burnTime = nbt.getInt("burnTime");
 		detectBurnTime = burnTime + 1;
-		maxBurn = nbt.getInteger("maxBurn");
+		maxBurn = nbt.getInt("maxBurn");
 		detectMaxBurn = maxBurn + 1;
 		isRetracting = nbt.getBoolean("ret");
 		detectIsRetracting = !isRetracting;
-		if(nbt.hasKey("inventory"))
-			((ItemStackHandler) inventory).deserializeNBT((NBTTagCompound) nbt.getTag("inventory"));
+		if(nbt.contains("inventory"))
+			((ItemStackHandler) inventory).deserializeNBT((CompoundTag) nbt.get("inventory"));
 	}
 
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+	public CompoundTag writeToNBT(CompoundTag nbt) {
 		super.writeToNBT(nbt);
 
-		nbt.setInteger("progress", progress);
-		nbt.setInteger("power", power);
-		nbt.setInteger("burnTime", burnTime);
-		nbt.setInteger("maxBurn", maxBurn);
-		nbt.setBoolean("ret", isRetracting);
+		nbt.putInt("progress", progress);
+		nbt.putInt("power", power);
+		nbt.putInt("burnTime", burnTime);
+		nbt.putInt("maxBurn", maxBurn);
+		nbt.putBoolean("ret", isRetracting);
 
-		nbt.setTag("inventory", ((ItemStackHandler) inventory).serializeNBT());
+		nbt.put("inventory", ((ItemStackHandler) inventory).serializeNBT());
 
 		return nbt;
 	}
@@ -94,7 +93,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements ITi
 				System.out.println(portal);
 				test = false;
 			}*/
-		if(!world.isRemote) {
+		if(!level.isClientSide) {
 			if(burnTime > 0) {
 				this.burnTime--;
 				this.power++;
@@ -104,8 +103,9 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements ITi
 				if(power > 0)
 					power--;
 			}
-			if(!(world.isBlockIndirectlyGettingPowered(pos) > 0)) {
-				if(inventory.getStackInSlot(0) != ItemStack.EMPTY && this.burnTime == 0 && TileEntityFurnace.getItemBurnTime(inventory.getStackInSlot(0)) > 0) {
+			if(!(level.isBlockIndirectlyGettingPowered(worldPosition) > 0)) {
+				if(inventory.getStackInSlot(0) != ItemStack.EMPTY && this.burnTime == 0
+						&& TileEntityFurnace.getItemBurnTime(inventory.getStackInSlot(0)) > 0) {
 					this.maxBurn = this.burnTime = TileEntityFurnace.getItemBurnTime(inventory.getStackInSlot(0)) / 8;
 					ItemStack copy = inventory.getStackInSlot(0).copy();
 					inventory.getStackInSlot(0).shrink(1);
@@ -142,14 +142,19 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements ITi
 									inventory.setStackInSlot(2, ItemStack.EMPTY);
 
 								if(inventory.getStackInSlot(1).getMaxDamage() > 0){
-									inventory.getStackInSlot(1).setItemDamage(inventory.getStackInSlot(1).getItemDamage() + 1);
-									if(inventory.getStackInSlot(1).getItemDamage() >= inventory.getStackInSlot(1).getMaxDamage())
+									inventory.getStackInSlot(1)
+											.setDamageValue(inventory.getStackInSlot(1)
+													.getDamageValue() + 1);
+									if(inventory.getStackInSlot(1)
+											.getDamageValue() >= inventory.getStackInSlot(1)
+											.getMaxDamage())
 										inventory.setStackInSlot(1, ItemStack.EMPTY);
 								}
 								// this.world.playSound(pos.getX(), pos.getY(),
 								// pos.getZ(), HBMSoundHandler.pressOperate,
 								// SoundCategory.BLOCKS, 1.5F, 1.0F, false);
-								this.world.playSound(null, pos, HBMSoundHandler.pressOperate, SoundCategory.BLOCKS, 1.5F, 1.0F);
+								this.level.playSound(null, worldPosition,
+										HBMSoundHandler.pressOperate, SoundSource.BLOCKS, 1.5F, 1.0F);
 							}
 
 							if(!isRetracting)
@@ -179,7 +184,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements ITi
 	}
 
 	@Override
-	public AxisAlignedBB getRenderBoundingBox() {
+	public AABB getRenderBoundingBox() {
 		return INFINITE_EXTENT_AABB;
 		// return new AxisAlignedBB(pos, pos.add(1, 3, 1));
 	}
@@ -191,12 +196,12 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements ITi
 	}
 
 	@Override
-	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+	public boolean hasCapability(Capability<?> capability, Direction facing) {
 		return super.hasCapability(capability, facing);
 	}
 
 	@Override
-	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+	public <T> T getCapability(Capability<T> capability, Direction facing) {
 		return super.getCapability(capability, facing);
 	}
 
@@ -205,16 +210,17 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements ITi
 		return "container.press";
 	}
 	
-	public boolean isUsableByPlayer(EntityPlayer player) {
-		if(player.world.getTileEntity(this.pos) != this) {
+	public boolean isUsableByPlayer(Player player) {
+		if(player.level().getBlockEntity(this.worldPosition) != this) {
 			return false;
 		} else {
-			return player.getDistanceSq(this.pos.getX() + 0.5D, this.pos.getY() + 0.5D, this.pos.getZ() + 0.5D) <= 64;
+			return player.getDistanceSq(this.worldPosition.getX() + 0.5D,
+					this.worldPosition.getY() + 0.5D, this.worldPosition.getZ() + 0.5D) <= 64;
 		}
 	}
 	
 	@Override
-	public int[] getAccessibleSlotsFromSide(EnumFacing e){
+	public int[] getAccessibleSlotsFromSide(Direction e){
 		int i = e.ordinal();
 		return i == 0 ? new int[] { 3 } : new int[]{ 0, 1, 2 };
 	}
@@ -272,8 +278,11 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements ITi
 			detectIsRetracting = isRetracting;
 		}
 		if(mark)
-			markDirty();
-		PacketDispatcher.wrapper.sendToAllAround(new TEPressPacket(this.pos.getX(), pos.getY(), pos.getZ(), inventory.getStackInSlot(2), progress), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+//			markDirty();
+		PacketDispatcher.wrapper.sendToAllAround(new TEPressPacket(this.worldPosition.getX(),
+				worldPosition.getY(), worldPosition.getZ(), inventory.getStackInSlot(2), progress),
+				new Climate.TargetPoint(level.provider.getDimension(),
+						worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), 100));
 	}
 
 }

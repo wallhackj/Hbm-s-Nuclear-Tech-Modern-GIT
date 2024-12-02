@@ -4,25 +4,23 @@ import java.util.ArrayList;
 
 import com.hbm.interfaces.IConstantRenderer;
 import com.hbm.render.amlfrom1710.Vec3;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import static org.joml.Math.clamp;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+
 /*
  * Toroidial Convection Simulation Explosion Effect
  * Tor                             Ex
  */
 public class EntityNukeTorex extends Entity implements IConstantRenderer {
 
-	public static final DataParameter<Float> SCALE = EntityDataManager.createKey(EntityNukeTorex.class, DataSerializers.FLOAT);
-	public static final DataParameter<Byte> TYPE = EntityDataManager.createKey(EntityNukeTorex.class, DataSerializers.BYTE);
+	public static final DataParameter<Float> SCALE = EntityDataManager.createKey(EntityNukeTorex.class,
+			DataSerializers.FLOAT);
+	public static final DataParameter<Byte> TYPE = EntityDataManager.createKey(EntityNukeTorex.class,
+			DataSerializers.BYTE);
 	
 	public static final int firstCondenseHeight = 130;
 	public static final int secondCondenseHeight = 170;
@@ -55,7 +53,7 @@ public class EntityNukeTorex extends Entity implements IConstantRenderer {
 	public int maxAge = 1000;
 	public float humidity = -1;
 
-	public EntityNukeTorex(World p_i1582_1_) {
+	public EntityNukeTorex(Level p_i1582_1_) {
 		super(p_i1582_1_);
 		this.setSize(20F, 40F);
 		this.isImmuneToFire = true;
@@ -69,17 +67,17 @@ public class EntityNukeTorex extends Entity implements IConstantRenderer {
 	}
 
 	@Override
-	protected void readEntityFromNBT(NBTTagCompound nbt) {
-		if (nbt.hasKey("scale"))
+	protected void readEntityFromNBT(CompoundTag nbt) {
+		if (nbt.contains("scale"))
 			setScale(nbt.getFloat("scale"));
-		if (nbt.hasKey("type"))
+		if (nbt.contains("type"))
 			this.dataManager.set(TYPE, nbt.getByte("type"));
 	}
 
 	@Override
-	protected void writeEntityToNBT(NBTTagCompound nbt) {
-		nbt.setFloat("scale", this.dataManager.get(SCALE));
-		nbt.setByte("type", this.dataManager.get(TYPE));
+	protected void writeEntityToNBT(CompoundTag nbt) {
+		nbt.putFloat("scale", this.dataManager.get(SCALE));
+		nbt.putByte("type", this.dataManager.get(TYPE));
 	}
 
 	@Override
@@ -90,19 +88,19 @@ public class EntityNukeTorex extends Entity implements IConstantRenderer {
 
 	@Override
 	public void onUpdate() {
-		if(world.isRemote) {
+		if(level().isClientSide) {
 			
 			double s = this.getScale();
 			double cs = 1.5;
 			if(this.ticksExisted == 1) this.setScale((float) s);
 			
-			if(humidity == -1) humidity = world.getBiome(this.getPosition()).getRainfall();
+			if(humidity == -1) humidity = level().getBiome(this.getOnPos()).getRainfall();
 			
 			if(lastSpawnY == -1) {
 				lastSpawnY = posY - 3;
 			}
 			
-			int spawnTarget = Math.max(world.getHeight((int) Math.floor(posX), (int) Math.floor(posZ)) - 3, 1);
+			int spawnTarget = Math.max(level().getHeight((int) Math.floor(posX), (int) Math.floor(posZ)) - 3, 1);
 			double moveSpeed = 0.5D;
 			
 			if(Math.abs(spawnTarget - lastSpawnY) < moveSpeed) {
@@ -299,8 +297,8 @@ public class EntityNukeTorex extends Entity implements IConstantRenderer {
 			this.age = age;
 			this.cloudletLife = maxAge;
 			this.angle = angle;
-			this.rangeMod = 0.3F + rand.nextFloat() * 0.7F;
-			this.colorMod = 0.8F + rand.nextFloat() * 0.2F;
+			this.rangeMod = 0.3F + random.nextFloat() * 0.7F;
+			this.colorMod = 0.8F + random.nextFloat() * 0.2F;
 			this.type = type;
 			
 			this.updateColor();
@@ -333,7 +331,8 @@ public class EntityNukeTorex extends Entity implements IConstantRenderer {
 				Vec3 convection = getConvectionMotion(simPosX, simPosZ);
 				Vec3 lift = getLiftMotion(simPosX, simPosZ);
 				
-				double factor = MathHelper.clamp((this.posY - EntityNukeTorex.this.posY) / EntityNukeTorex.this.coreHeight, 0, 1);
+				double factor = clamp((this.posY - EntityNukeTorex.this.position().y) / EntityNukeTorex.this.coreHeight,
+						0, 1);
 				this.motionX = convection.xCoord * factor + lift.xCoord * (1D - factor);
 				this.motionY = convection.yCoord * factor + lift.yCoord * (1D - factor);
 				this.motionZ = convection.zCoord * factor + lift.zCoord * (1D - factor);

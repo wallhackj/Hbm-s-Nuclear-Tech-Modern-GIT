@@ -1,8 +1,10 @@
 package com.hbm.lib;
 
-import net.minecraft.item.ItemStack;
+
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
 
 public class ItemStackHandlerWrapper implements IItemHandlerModifiable {
 
@@ -48,6 +50,11 @@ public class ItemStackHandlerWrapper implements IItemHandlerModifiable {
 	@Override
 	public int getSlotLimit(int slot) {
 		return handle.getSlotLimit(slot);
+	}
+
+	@Override
+	public boolean isItemValid(int i, @NotNull ItemStack itemStack) {
+		return false;
 	}
 
 	@Override

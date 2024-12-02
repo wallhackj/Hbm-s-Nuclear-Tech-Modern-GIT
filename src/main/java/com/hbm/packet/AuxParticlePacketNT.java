@@ -7,11 +7,7 @@ import com.hbm.main.MainRegistry;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraft.nbt.CompoundTag;
 
 public class AuxParticlePacketNT implements IMessage {
 	
@@ -19,13 +15,13 @@ public class AuxParticlePacketNT implements IMessage {
 
 	public AuxParticlePacketNT() { }
 
-	public AuxParticlePacketNT(NBTTagCompound nbt, double x, double y, double z) {
+	public AuxParticlePacketNT(CompoundTag nbt, double x, double y, double z) {
 		
 		this.buffer = new PacketBuffer(Unpooled.buffer());
 
-		nbt.setDouble("posX", x);
-		nbt.setDouble("posY", y);
-		nbt.setDouble("posZ", z);
+		nbt.putDouble("posX", x);
+		nbt.putDouble("posY", y);
+		nbt.putDouble("posZ", z);
 		
 		buffer.writeCompoundTag(nbt);
 	}
@@ -58,7 +54,7 @@ public class AuxParticlePacketNT implements IMessage {
 				
 				try {
 					
-					NBTTagCompound nbt = m.buffer.readCompoundTag();
+					CompoundTag nbt = m.buffer.readCompoundTag();
 					
 					if(nbt != null)
 						MainRegistry.proxy.effectNT(nbt);

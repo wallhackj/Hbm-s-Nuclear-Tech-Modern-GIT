@@ -5,13 +5,11 @@ import com.hbm.tileentity.machine.TileEntityMachinePress;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.network.NetworkEvent;
+
 
 public class TEPressPacket implements IMessage {
 
@@ -24,7 +22,7 @@ public class TEPressPacket implements IMessage {
 
 	public TEPressPacket()
 	{
-		
+
 	}
 
 	public TEPressPacket(int x, int y, int z, ItemStack stack, int progress)
@@ -35,8 +33,8 @@ public class TEPressPacket implements IMessage {
 		this.item = 0;
 		this.meta = 0;
 		if(stack != null) {
-			this.item = Item.getIdFromItem(stack.getItem());
-			this.meta = stack.getItemDamage();
+			this.item = Item.getId(stack.getItem());
+			this.meta = stack.getDamageValue();
 		}
 		this.progress = progress;
 	}
@@ -62,31 +60,31 @@ public class TEPressPacket implements IMessage {
 	}
 
 	public static class Handler implements IMessageHandler<TEPressPacket, IMessage> {
-		
-		@Override
-		public IMessage onMessage(TEPressPacket m, MessageContext ctx) {
-			
-			Minecraft.getMinecraft().addScheduledTask(() -> {
-				TileEntity te = Minecraft.getMinecraft().world.getTileEntity(new BlockPos(m.x, m.y, m.z));
 
-				if (te != null && te instanceof TileEntityMachinePress) {
-						
-					TileEntityMachinePress gen = (TileEntityMachinePress) te;
-					gen.item = m.item;
-					gen.meta = m.meta;
-					gen.progress = m.progress;
-				}
-				if (te != null && te instanceof TileEntityMachineEPress) {
-						
-					TileEntityMachineEPress gen = (TileEntityMachineEPress) te;
-					gen.item = m.item;
-					gen.meta = m.meta;
-					gen.progress = m.progress;
-				}
+		@Override
+		public IMessage onMessage(TEPressPacket m, NetworkEvent.Context ctx) {
+			ctx.enqueueWork(() -> {
+				// Handle the packet on the main thread
+				Minecraft.getInstance().execute(() -> {
+					BlockPos pos = new BlockPos(m.x, m.y, m.z);
+					TileEntityMachinePress machinePress = (TileEntityMachinePress) Minecraft.getInstance().level.getBlockEntity(pos);
+					if (machinePress != null) {
+						machinePress.item = m.item;
+						machinePress.meta = m.meta;
+						machinePress.progress = m.progress;
+					}
+					TileEntityMachineEPress machineEPress = (TileEntityMachineEPress) Minecraft.getInstance().level.getBlockEntity(pos);
+					if (machineEPress != null) {
+						machineEPress.item = m.item;
+						machineEPress.meta = m.meta;
+						machineEPress.progress = m.progress;
+					}
+				});
 			});
-			
-			return null;
-		}
+			ctx.setPacketHandled(true);
+
+            return null;
+        }
 	}
 
 }
