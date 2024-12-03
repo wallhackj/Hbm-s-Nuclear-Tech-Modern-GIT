@@ -8,33 +8,24 @@ import com.hbm.interfaces.IBomb;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.bomb.TileEntityBombMulti;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockContainer;
-import net.minecraft.block.BlockHorizontal;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.properties.PropertyDirection;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
 
 public class BombMulti extends BlockContainer implements IBomb {
 
 	public static final PropertyDirection FACING = BlockHorizontal.FACING;
-	public static final AxisAlignedBB MULTI_BB = new AxisAlignedBB(0.0, 0.0, 0.0, 1.0, 0.5, 1.0);
+	public static final AABB MULTI_BB = new AABB(0.0, 0.0, 0.0, 1.0, 0.5, 1.0);
 	
 	public final float explosionBaseValue = 8.0F;
 	public float explosionValue = 0.0F;
@@ -52,16 +43,17 @@ public class BombMulti extends BlockContainer implements IBomb {
 	}
 
 	@Override
-	public TileEntity createNewTileEntity(World worldIn, int meta) {
+	public TileEntity createNewTileEntity(Level worldIn, int meta) {
 		return new TileEntityBombMulti();
 	}
 	
 	@Override
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-		if(world.isRemote)
+	public boolean onBlockActivated(Level world, BlockPos pos, BlockState state, Player player, InteractionHand hand,
+									Direction facing, float hitX, float hitY, float hitZ) {
+		if(world.isClientSide)
 		{
 			return true;
-		} else if(!player.isSneaking())
+		} else if(!player.isCrouching())
 		{
 			TileEntityBombMulti entity = (TileEntityBombMulti) world.getTileEntity(pos);
 			if(entity != null)
@@ -75,7 +67,7 @@ public class BombMulti extends BlockContainer implements IBomb {
 	}
 	
 	@Override
-	public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
+	public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
 		TileEntityBombMulti entity = (TileEntityBombMulti) worldIn.getTileEntity(pos);
         if (worldIn.isBlockIndirectlyGettingPowered(pos) > 0)
         {
@@ -88,21 +80,22 @@ public class BombMulti extends BlockContainer implements IBomb {
 	}
 	
 	@Override
-	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+	public void breakBlock(Level worldIn, BlockPos pos, BlockState state) {
 		InventoryHelper.dropInventoryItems(worldIn, pos, worldIn.getTileEntity(pos));
 		super.breakBlock(worldIn, pos, state);
 	}
 	
 	@Override
-	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-		worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()));
+	public void onBlockPlacedBy(Level worldIn, BlockPos pos, BlockState state, EntityLivingBase placer,
+								ItemStack stack) {
+		worldIn.setBlockAndUpdate(pos, state.setValue(FACING, placer.getHorizontalFacing().getOpposite()));
 	}
 	
-	public boolean igniteTestBomb(World world, int x, int y, int z)
+	public boolean igniteTestBomb(Level world, int x, int y, int z)
 	{
 		BlockPos pos = new BlockPos(x, y, z);
     	TileEntityBombMulti entity = (TileEntityBombMulti) world.getTileEntity(pos);
-		if (!world.isRemote)
+		if (!world.isClientSide)
 		{
         	if(entity.isLoaded())
         	{
@@ -149,7 +142,7 @@ public class BombMulti extends BlockContainer implements IBomb {
         		}
 
         		entity.clearSlots();
-            	world.setBlockToAir(pos);
+            	world.removeBlock(pos, false);
             	//world.createExplosion(null, x , y , z , this.explosionValue, true);
             	ExplosionLarge.explode(world, x, y, z, explosionValue, true, true, true);
             	this.explosionValue = 0;
@@ -186,12 +179,12 @@ public class BombMulti extends BlockContainer implements IBomb {
 	}
 	
 	@Override
-	public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+	public AABB getBoundingBox(BlockState state, BlockGetter source, BlockPos pos) {
 		return MULTI_BB;
 	}
 
 	@Override
-	public void explode(World world, BlockPos pos) {
+	public void explode(Level world, BlockPos pos) {
 		TileEntityBombMulti entity = (TileEntityBombMulti) world.getTileEntity(pos);
     	if(/*entity.getExplosionType() != 0*/entity.isLoaded())
     	{
@@ -201,32 +194,32 @@ public class BombMulti extends BlockContainer implements IBomb {
 	}
 	
 	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state) {
+	public EnumBlockRenderType getRenderType(BlockState state) {
 		return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
 	}
 	
 	@Override
-	public boolean isOpaqueCube(IBlockState state) {
+	public boolean isOpaqueCube(BlockState state) {
 		return false;
 	}
 	
 	@Override
-	public boolean isBlockNormalCube(IBlockState state) {
+	public boolean isBlockNormalCube(BlockState state) {
 		return false;
 	}
 	
 	@Override
-	public boolean isNormalCube(IBlockState state) {
+	public boolean isNormalCube(BlockState state) {
 		return false;
 	}
 	
 	@Override
-	public boolean isNormalCube(IBlockState state, IBlockAccess world, BlockPos pos) {
+	public boolean isNormalCube(BlockState state, BlockGetter world, BlockPos pos) {
 		return false;
 	}
 	
 	@Override
-	public boolean isFullCube(IBlockState state) {
+	public boolean isFullCube(BlockState state) {
 		return false;
 	}
 	
@@ -236,12 +229,12 @@ public class BombMulti extends BlockContainer implements IBomb {
 	}
 	
 	@Override
-	public int getMetaFromState(IBlockState state) {
+	public int getMetaFromState(BlockState state) {
 		return ((EnumFacing)state.getValue(FACING)).getIndex();
 	}
 	
 	@Override
-	public IBlockState getStateFromMeta(int meta) {
+	public BlockState getStateFromMeta(int meta) {
 		EnumFacing enumfacing = EnumFacing.getFront(meta);
 
         if (enumfacing.getAxis() == EnumFacing.Axis.Y)
@@ -255,14 +248,14 @@ public class BombMulti extends BlockContainer implements IBomb {
 	
 	
 	@Override
-	public IBlockState withRotation(IBlockState state, Rotation rot) {
-		return state.withProperty(FACING, rot.rotate((EnumFacing)state.getValue(FACING)));
+	public BlockState withRotation(BlockState state, Rotation rot) {
+		return state.setValue(FACING, rot.rotate((EnumFacing)state.getValue(FACING)));
 	}
 	
 	@Override
-	public IBlockState withMirror(IBlockState state, Mirror mirrorIn)
+	public BlockState withMirror(BlockState state, Mirror mirrorIn)
 	{
-	   return state.withRotation(mirrorIn.toRotation((EnumFacing)state.getValue(FACING)));
+	   return state.setValue(mirrorIn.toRotation((EnumFacing)state.getValue(FACING)));
 	}
 
 }

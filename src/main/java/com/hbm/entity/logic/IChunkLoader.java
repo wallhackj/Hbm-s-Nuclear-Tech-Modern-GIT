@@ -1,6 +1,7 @@
 package com.hbm.entity.logic;
 
-import net.minecraftforge.common.ForgeChunkManager.Ticket;
+
+import net.minecraft.server.level.Ticket;
 
 public interface IChunkLoader {
 

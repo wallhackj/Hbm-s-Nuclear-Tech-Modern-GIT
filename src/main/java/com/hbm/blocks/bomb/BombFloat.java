@@ -6,14 +6,12 @@ import com.hbm.explosion.ExplosionChaos;
 import com.hbm.explosion.ExplosionNukeGeneric;
 import com.hbm.interfaces.IBomb;
 import com.hbm.lib.HBMSoundHandler;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 public class BombFloat extends Block implements IBomb {
 
@@ -26,7 +24,7 @@ public class BombFloat extends Block implements IBomb {
 	}
 	
 	@Override
-	public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
+	public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
         if (worldIn.isBlockIndirectlyGettingPowered(pos) > 0)
         {
         	explode(worldIn, pos);
@@ -34,11 +32,12 @@ public class BombFloat extends Block implements IBomb {
 	}
 
 	@Override
-	public void explode(World world, BlockPos pos) {
-		world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.sparkShoot, SoundCategory.BLOCKS, 5.0f, world.rand.nextFloat() * 0.2F + 0.9F);
+	public void explode(Level world, BlockPos pos) {
+		world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.sparkShoot,
+				SoundCategory.BLOCKS, 5.0f, world.random.nextFloat() * 0.2F + 0.9F);
 		
-		if(!world.isRemote) {
-			world.setBlockState(pos, Blocks.AIR.getDefaultState());
+		if(!world.isClientSide) {
+			world.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
     		if(this == ModBlocks.float_bomb) {
             	ExplosionChaos.floater(world, pos, 15, 50);
             	ExplosionChaos.move(world, pos, 15, 0, 50, 0);

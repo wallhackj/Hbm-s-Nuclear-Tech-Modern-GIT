@@ -252,31 +252,33 @@ public class ExplosionNT extends Explosion {
                 if (block.isNormalCube()) {
 
                     if (has(ExAttrib.DIGAMMA)) {
-                        this.worldObj.setBlockAndUpdate(new BlockPos(i, j, k), ModBlocks.ash_digamma.getDefaultState());
+                        this.worldObj.setBlockAndUpdate(new BlockPos(i, j, k),
+                                ModBlocks.ash_digamma.defaultBlockState());
 
-                        if (this.explosionRNG.nextInt(5) == 0 && this.worldObj.getBlockState(new BlockPos(i, j + 1, k)).getBlock() == Blocks.AIR)
+                        if (this.explosionRNG.nextInt(5) == 0 && this.worldObj
+                                .getBlockState(new BlockPos(i, j + 1, k)).getBlock() == Blocks.AIR)
                             this.worldObj.setBlockAndUpdate(new BlockPos(i, j + 1, k),
-                                    ModBlocks.fire_digamma.getDefaultState());
+                                    ModBlocks.fire_digamma.defaultBlockState());
 
                     } else if (has(ExAttrib.DIGAMMA_CIRCUIT)) {
 
                         if (i % 3 == 0 && k % 3 == 0) {
                             this.worldObj.setBlockAndUpdate(new BlockPos(i, j, k),
-                                    ModBlocks.pribris_digamma.getDefaultState());
+                                    ModBlocks.pribris_digamma.defaultBlockState());
                         } else if ((i % 3 == 0 || k % 3 == 0) && this.explosionRNG.nextBoolean()) {
                             this.worldObj.setBlockAndUpdate(new BlockPos(i, j, k),
-                                    ModBlocks.pribris_digamma.getDefaultState());
+                                    ModBlocks.pribris_digamma.defaultBlockState());
                         } else {
                             this.worldObj.setBlockAndUpdate(new BlockPos(i, j, k),
-                                    ModBlocks.ash_digamma.getDefaultState());
+                                    ModBlocks.ash_digamma.defaultBlockState());
 
                             if (this.explosionRNG.nextInt(5) == 0 && this.worldObj.getBlockState(new BlockPos(i, j + 1, k)).getBlock() == Blocks.AIR)
                                 this.worldObj.setBlockAndUpdate(new BlockPos(i, j + 1, k),
-                                        ModBlocks.fire_digamma.getDefaultState());
+                                        ModBlocks.fire_digamma.defaultBlockState());
                         }
                     } else if (has(ExAttrib.LAVA_V)) {
                         this.worldObj.setBlockAndUpdate(new BlockPos(i, j, k),
-                                ModBlocks.volcanic_lava_block.getDefaultState());
+                                ModBlocks.volcanic_lava_block.defaultBlockState());
                     }
                 }
             }
@@ -300,9 +302,9 @@ public class ExplosionNT extends Explosion {
 
                 if (block.getBlock() == AIR && block1.isFullBlock() && shouldReplace) {
                     if (has(ExAttrib.FIRE))
-                        this.worldObj.setBlockAndUpdate(chunkposition, Blocks.FIRE.getDefaultState());
+                        this.worldObj.setBlockAndUpdate(chunkposition, Blocks.FIRE.defaultBlockState());
                     else if (has(ExAttrib.BALEFIRE))
-                        this.worldObj.setBlockAndUpdate(chunkposition, ModBlocks.balefire.getDefaultState());
+                        this.worldObj.setBlockAndUpdate(chunkposition, ModBlocks.balefire.defaultBlockState());
                     else if (has(ExAttrib.LAVA))
                         this.worldObj.setBlockAndUpdate(chunkposition, Blocks.FLOWING_LAVA.getDefaultState());
                 }
