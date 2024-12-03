@@ -8,25 +8,16 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.entity.mob.EntityTaintedCreeper;
 import com.hbm.main.MainRegistry;
 import com.hbm.potion.HbmPotion;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.PropertyInteger;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.monster.EntityCreeper;
-import net.minecraft.item.ItemStack;
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
 
 public class BlockTaint extends Block {
 
@@ -43,57 +34,63 @@ public class BlockTaint extends Block {
 	}
 	
 	@Override
-	public void updateTick(World world, BlockPos pos1, IBlockState state, Random rand) {
+	public void updateTick(Level world, BlockPos pos1, BlockState state, Random rand) {
 
 		int meta = state.getValue(TEXTURE);
-    	if(!world.isRemote && meta < 15) {
+    	if(!world.isClientSide && meta < 15) {
     		BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 	    	for(int i = 0; i < 15; i++) {
 	    		int a = rand.nextInt(11) + pos1.getX() - 5;
 	    		int b = rand.nextInt(11) + pos1.getY() - 5;
 	    		int c = rand.nextInt(11) + pos1.getZ() - 5;
-	    		pos.setPos(a, b, c);
-	            if(world.getBlockState(pos).getBlock().isReplaceable(world, pos) && !world.getBlockState(pos).getMaterial().isLiquid() && BlockTaint.hasPosNeightbour(world, pos))
-	            	world.setBlockState(pos, ModBlocks.taint.getBlockState().getBaseState().withProperty(TEXTURE, meta + 1), 2);
+	    		pos.offset(a, b, c);
+	            if(world.getBlockState(pos).getBlock().isReplaceable(world, pos) &&
+						!world.getBlockState(pos).getMaterial().isLiquid() && BlockTaint.hasPosNeightbour(world, pos))
+	            	world.setBlockAndUpdate(pos, ModBlocks.taint
+							.getBlockState().getBaseState().withProperty(TEXTURE, meta + 1), 2);
 	    	}
 	            
 		    for(int i = 0; i < 85; i++) {
 		    	int a = rand.nextInt(7) + pos1.getX() - 3;
 		    	int b = rand.nextInt(7) + pos1.getY() - 3;
 		    	int c = rand.nextInt(7) + pos1.getZ() - 3;
-		    	pos.setPos(a, b, c);
-	           	if(world.getBlockState(pos).getBlock().isReplaceable(world, pos) && !world.getBlockState(pos).getMaterial().isLiquid() && BlockTaint.hasPosNeightbour(world, pos))
-		           	world.setBlockState(pos, ModBlocks.taint.getBlockState().getBaseState().withProperty(TEXTURE, meta + 1), 2);
+		    	pos.offset(a, b, c);
+	           	if(world.getBlockState(pos)
+						.getBlock().isReplaceable(world, pos) &&
+						!world.getBlockState(pos)
+								.getMaterial().isLiquid() &&
+						BlockTaint.hasPosNeightbour(world, pos))
+		           	world.setBlockAndUpdate(pos, ModBlocks.taint
+							.getBlockState().getBaseState().withProperty(TEXTURE, meta + 1), 2);
 		    }
     	}
 	}
 
-	private static boolean checkAttachment(World world, BlockPos pos){
+	private static boolean checkAttachment(Level world, BlockPos pos){
 		if(!world.isAirBlock(pos)){
-    		if(world.getBlockState(pos).getBlock() != ModBlocks.taint)
-    			return true;
+            return world.getBlockState(pos).getBlock() != ModBlocks.taint;
     	}
     	return false;
     }
 
 
 	//Drillgon200: Ah yes, spelling.
-	 public static boolean hasPosNeightbour(World world, BlockPos pos) {
-	    	return checkAttachment(world, pos.add(1, 0, 0)) ||
-					checkAttachment(world, pos.add(0, 1, 0)) ||
-					checkAttachment(world, pos.add(0, 0, 1)) ||
-					checkAttachment(world, pos.add(-1, 0, 0)) ||
-					checkAttachment(world, pos.add(0, -1, 0)) ||
-					checkAttachment(world, pos.add(0, 0, -1));
+	 public static boolean hasPosNeightbour(Level world, BlockPos pos) {
+	    	return checkAttachment(world, pos.offset(1, 0, 0)) ||
+					checkAttachment(world, pos.offset(0, 1, 0)) ||
+					checkAttachment(world, pos.offset(0, 0, 1)) ||
+					checkAttachment(world, pos.offset(-1, 0, 0)) ||
+					checkAttachment(world, pos.offset(0, -1, 0)) ||
+					checkAttachment(world, pos.offset(0, 0, -1));
 	}
 
 	@Override
-	public AxisAlignedBB getSelectedBoundingBox(IBlockState state, World worldIn, BlockPos pos) {
-		return new AxisAlignedBB(pos, pos);
+	public AABB getSelectedBoundingBox(BlockState state, Level worldIn, BlockPos pos) {
+		return new AABB(pos, pos);
 	}
 
 	@Override
-	public AxisAlignedBB getCollisionBoundingBox(IBlockState blockState, IBlockAccess worldIn, BlockPos pos) {
+	public AABB getCollisionBoundingBox(BlockState blockState, BlockGetter worldIn, BlockPos pos) {
 		return NULL_AABB;
 	}
 
@@ -103,13 +100,13 @@ public class BlockTaint extends Block {
 	}
 
 	@Override
-	public boolean isReplaceable(IBlockAccess worldIn, BlockPos pos){
+	public boolean isReplaceable(BlockGetter worldIn, BlockPos pos){
 		return false;
 	}
 
 
 	@Override
-	public void onEntityCollidedWithBlock(World world, BlockPos pos, IBlockState state, Entity entity) {
+	public void onEntityCollidedWithBlock(Level world, BlockPos pos, BlockState state, Entity entity) {
 		int meta = world.getBlockState(pos).getBlock().getMetaFromState(state);
 		int level = 15 - meta;
 		
@@ -127,7 +124,7 @@ public class BlockTaint extends Block {
     		EntityTaintedCreeper creep = new EntityTaintedCreeper(world);
     		creep.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
 
-    		if(!world.isRemote) {
+    		if(!world.isClientSide) {
     			entity.setDead();
     			world.spawnEntity(creep);
     		}
@@ -135,7 +132,7 @@ public class BlockTaint extends Block {
 	}
 	
 	@Override
-	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
+	public void addInformation(ItemStack stack, Level player, List<String> tooltip, TooltipFlag advanced) {
 		tooltip.add("DO NOT TOUCH, BREATHE OR STARE AT. RUN!");
 	}
 
@@ -145,23 +142,23 @@ public class BlockTaint extends Block {
 	}
 	
 	@Override
-	public int getMetaFromState(IBlockState state) {
+	public int getMetaFromState(BlockState state) {
 		return state.getValue(TEXTURE);
 	}
 
 	@Override
-	public IBlockState getStateFromMeta(int meta) {
-		return this.getDefaultState().withProperty(TEXTURE, meta);
+	public BlockState getStateFromMeta(int meta) {
+		return this.defaultBlockState().withProperty(TEXTURE, meta);
 	}
 	
 	@Override
-	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
-		if(!BlockTaint.hasPosNeightbour(world, pos) && !world.isRemote)
-			world.setBlockToAir(pos);
+	public void neighborChanged(BlockState state, Level world, BlockPos pos, Block blockIn, BlockPos fromPos) {
+		if(!BlockTaint.hasPosNeightbour(world, pos) && !world.isClientSide)
+			world.removeBlock(pos, false);
 	}
 	
 	@Override
-	public boolean causesSuffocation(IBlockState state) {
+	public boolean causesSuffocation(BlockState state) {
 		return true;
 	}
 }

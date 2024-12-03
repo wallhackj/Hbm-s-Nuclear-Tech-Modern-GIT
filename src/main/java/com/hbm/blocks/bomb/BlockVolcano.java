@@ -11,22 +11,16 @@ import com.hbm.explosion.ExplosionNT;
 import com.hbm.explosion.ExplosionNT.ExAttrib;
 import com.hbm.packet.AuxParticlePacketNT;
 import com.hbm.packet.PacketDispatcher;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.PropertyInteger;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
 public class BlockVolcano extends Block {
 
@@ -49,27 +43,29 @@ public class BlockVolcano extends Block {
 	}
 	
 	@Override
-	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced){
-		int meta = stack.getItemDamage();
+	public void addInformation(ItemStack stack, Level player, List<String> tooltip, TooltipFlag advanced){
+		int meta = stack.getDamageValue();
 
-		tooltip.add(BlockVolcano.isGrowing(meta) ? (TextFormatting.RED + "DOES GROW") : (TextFormatting.DARK_GRAY + "DOES NOT GROW"));
-		tooltip.add(BlockVolcano.isExtinguishing(meta) ? (TextFormatting.RED + "DOES EXTINGUISH") : (TextFormatting.DARK_GRAY + "DOES NOT EXTINGUISH"));
+		tooltip.add(BlockVolcano.isGrowing(meta) ? (TextFormatting.RED + "DOES GROW") :
+				(TextFormatting.DARK_GRAY + "DOES NOT GROW"));
+		tooltip.add(BlockVolcano.isExtinguishing(meta) ? (TextFormatting.RED + "DOES EXTINGUISH") :
+				(TextFormatting.DARK_GRAY + "DOES NOT EXTINGUISH"));
 	}
 	
 	@Override
-	public int tickRate(World world) {
+	public int tickRate(Level world) {
 		return 5;
 	}
 
 	@Override
-	public void onBlockAdded(World world, BlockPos pos, IBlockState state){
-		if(!world.isRemote)
+	public void onBlockAdded(Level world, BlockPos pos, BlockState state){
+		if(!world.isClientSide)
 			world.scheduleUpdate(pos, this, this.tickRate(world));
 	}
 	
 	@Override
-	public void updateTick(World world, BlockPos pos, IBlockState state, Random rand){
-		if(!world.isRemote) {
+	public void updateTick(Level world, BlockPos pos, BlockState state, Random rand){
+		if(!world.isClientSide) {
 			int x = pos.getX();
 			int y = pos.getY();
 			int z = pos.getZ();
@@ -84,8 +80,7 @@ public class BlockVolcano extends Block {
 		}
 	}
 
-	private void blastMagmaChannel(World world, int x, int y, int z, Random rand) {
-		
+	private void blastMagmaChannel(Level world, int x, int y, int z, Random rand) {
 		List<ExAttrib> attribs = Arrays.asList(new ExAttrib[] {ExAttrib.NODROP, ExAttrib.LAVA_V, ExAttrib.NOSOUND, ExAttrib.ALLMOD, ExAttrib.NOHURT});
 		
 		ExplosionNT explosion = new ExplosionNT(world, null, x + 0.5, y + rand.nextInt(15) + 1.5, z + 0.5, 7);
@@ -97,18 +92,18 @@ public class BlockVolcano extends Block {
 		explosion2.explode();
 	}
 	
-	private void raiseMagma(World world, int x, int y, int z, Random rand) {
-
+	private void raiseMagma(Level world, int x, int y, int z, Random rand) {
 		int rX = x - 10 + rand.nextInt(21);
 		int rY = y + rand.nextInt(11);
 		int rZ = z - 10 + rand.nextInt(21);
 		BlockPos pos = new BlockPos(rX, rY, rZ);
 		
-		if(world.getBlockState(pos).getBlock() == Blocks.AIR && world.getBlockState(pos.down()).getBlock() == ModBlocks.volcanic_lava_block)
-			world.setBlockState(pos, ModBlocks.volcanic_lava_block.getDefaultState());
+		if(world.getBlockState(pos).getBlock() == Blocks.AIR &&
+				world.getBlockState(pos.down()).getBlock() == ModBlocks.volcanic_lava_block)
+			world.setBlockAndUpdate(pos, ModBlocks.volcanic_lava_block.defaultBlockState());
 	}
 	
-	private void spawnBlobs(World world, int x, int y, int z, Random rand) {
+	private void spawnBlobs(Level world, int x, int y, int z, Random rand) {
 		
 		for(int i = 0; i < 3; i++) {
 			EntityShrapnel frag = new EntityShrapnel(world);
@@ -124,14 +119,15 @@ public class BlockVolcano extends Block {
 	/*
 	 * I SEE SMOKE, AND WHERE THERE'S SMOKE THERE'S FIRE!
 	 */
-	private void spawnSmoke(World world, int x, int y, int z, Random rand) {
-		NBTTagCompound dPart = new NBTTagCompound();
-		dPart.setString("type", "vanillaExt");
-		dPart.setString("mode", "volcano");
-		PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(dPart, x + 0.5, y + 10, z + 0.5), new TargetPoint(world.provider.getDimension(), x + 0.5, y + 10, z + 0.5, 250));
+	private void spawnSmoke(Level world, int x, int y, int z, Random rand) {
+		CompoundTag dPart = new CompoundTag();
+		dPart.putString("type", "vanillaExt");
+		dPart.putString("mode", "volcano");
+		PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(dPart, x + 0.5, y + 10, z + 0.5),
+				new TargetPoint(world.provider.getDimension(), x + 0.5, y + 10, z + 0.5, 250));
 	}
 	
-	private void updateVolcano(World world, int x, int y, int z, Random rand, int meta) {
+	private void updateVolcano(Level world, int x, int y, int z, Random rand, int meta) {
 		BlockPos pos = new BlockPos(x, y, z);
 		if(rand.nextDouble() < this.getProgressChance(world, x, y, z, rand, meta)) {
 			
@@ -147,9 +143,10 @@ public class BlockVolcano extends Block {
 						for(int k = -1; k <= 1; k++) {
 							
 							if(i + j + k == 0) {
-								world.setBlockState(pos, this.getDefaultState().withProperty(META, meta), 3);
+								world.setBlockAndUpdate(pos, this.defaultBlockState().withProperty(META, meta), 3);
 							} else {
-								world.setBlockState(pos.add(i, j, k), ModBlocks.volcanic_lava_block.getDefaultState());
+								world.setBlockAndUpdate(pos.offset(i, j, k),
+										ModBlocks.volcanic_lava_block.defaultBlockState());
 							}
 						}
 					}
@@ -157,7 +154,7 @@ public class BlockVolcano extends Block {
 				
 			//a progressing volcano that can't grow will extinguish
 			} else if(isExtinguishing(meta)) {
-				world.setBlockState(pos, ModBlocks.volcanic_lava_block.getDefaultState());
+				world.setBlockAndUpdate(pos, ModBlocks.volcanic_lava_block.defaultBlockState());
 			}
 			
 		//if there's no progress, schedule an update on the current position
@@ -179,7 +176,7 @@ public class BlockVolcano extends Block {
 		return meta == META_STATIC_EXTINGUISHING || meta == META_GROWING_EXTINGUISHING;
 	}
 	
-	private boolean shouldGrow(World world, int x, int y, int z, Random rand, int meta) {
+	private boolean shouldGrow(Level world, int x, int y, int z, Random rand, int meta) {
 		
 		//non-growing volcanoes should extinguish
 		if(!isGrowing(meta))
@@ -189,7 +186,7 @@ public class BlockVolcano extends Block {
 		return y < 200;
 	}
 	
-	private double getProgressChance(World world, int x, int y, int z, Random rand, int meta) {
+	private double getProgressChance(Level world, int x, int y, int z, Random rand, int meta) {
 
 		if(meta == META_STATIC_EXTINGUISHING)
 			return 0.00003D; //about once every hour
@@ -203,18 +200,18 @@ public class BlockVolcano extends Block {
 		return 0;
 	}
 	
-	@Override
+//	@Override
 	protected BlockStateContainer createBlockState(){
 		return new BlockStateContainer(this, META);
 	}
 	
-	@Override
-	public int getMetaFromState(IBlockState state){
+//	@Override
+	public int getMetaFromState(BlockState state){
 		return state.getValue(META);
 	}
 	
-	@Override
-	public IBlockState getStateFromMeta(int meta){
-		return this.getDefaultState().withProperty(META, meta);
+//	@Override
+	public BlockState getStateFromMeta(int meta){
+		return this.defaultBlockState().withProperty(META, meta);
 	}
 }
