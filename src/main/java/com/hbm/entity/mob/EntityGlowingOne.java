@@ -16,6 +16,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.item.Item;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 public class EntityGlowingOne extends EntityZombie implements IRadiationImmune {
 
@@ -52,7 +53,7 @@ public class EntityGlowingOne extends EntityZombie implements IRadiationImmune {
         super.onLivingUpdate();
     }
 
-    public static void convertInRadiusToGlow(World world, double x, double y, double z, double radius){
+    public static void convertInRadiusToGlow(Level world, double x, double y, double z, double radius){
     	List<EntityZombie> entities = world.getEntitiesWithinAABB(EntityZombie.class, new AxisAlignedBB(x, y, z, x, y, z).grow(radius, radius, radius));
 		
 		for(EntityZombie e : entities) {

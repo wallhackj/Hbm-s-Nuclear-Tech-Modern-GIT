@@ -10,18 +10,9 @@ import java.util.List;
 import com.hbm.config.BombConfig;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.render.amlfrom1710.Vec3;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
-
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagLongArray;
-import net.minecraft.init.Blocks;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
 public class ExplosionNukeRayBatched {
 
@@ -32,7 +23,7 @@ public class ExplosionNukeRayBatched {
 	int posX;
 	int posY;
 	int posZ;
-	World world;
+	Level world;
 
 	int strength;
 	int radius;
@@ -48,7 +39,7 @@ public class ExplosionNukeRayBatched {
 	public boolean isAusf3Complete = false;
 	public int rayCheckInterval = 100;
 
-	public ExplosionNukeRayBatched(World world, int x, int y, int z, int strength, int radius) {
+	public ExplosionNukeRayBatched(Level world, int x, int y, int z, int strength, int radius) {
 		this.world = world;
 		this.posX = x;
 		this.posY = y;

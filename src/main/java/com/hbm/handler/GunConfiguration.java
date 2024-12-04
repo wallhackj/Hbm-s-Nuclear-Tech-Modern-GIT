@@ -8,8 +8,8 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.render.anim.BusAnimation;
 import com.hbm.render.anim.HbmAnimations.AnimType;
 import com.hbm.render.misc.RenderScreenOverlay.Crosshair;
+import net.minecraft.sounds.SoundEvent;
 
-import net.minecraft.util.SoundEvent;
 
 public class GunConfiguration {
 

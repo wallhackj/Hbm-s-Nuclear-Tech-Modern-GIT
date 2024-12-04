@@ -2,16 +2,17 @@ package com.hbm.tileentity.bomb;
 
 import com.hbm.entity.item.EntityFireworks;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.packet.AuxParticlePacketNT;
-import com.hbm.packet.PacketDispatcher;
+import net.minecraft.client.renderer.texture.Tickable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ITickable;
-import net.minecraft.util.SoundCategory;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
-public class TileEntityFireworks extends TileEntity implements ITickable {
+public class TileEntityFireworks extends BlockEntity implements Tickable {
 
 	public int color = 0xff0000;
 	public String message = "EAT MY ASS";
@@ -19,12 +20,16 @@ public class TileEntityFireworks extends TileEntity implements ITickable {
 
 	int index;
 	int delay;
-	
-	@Override
-	public void update() {
-		if(!world.isRemote) {
 
-			if(world.isBlockIndirectlyGettingPowered(pos) > 0 && !message.isEmpty() && charges > 0) {
+	public TileEntityFireworks(BlockEntityType<?> p_155228_, BlockPos p_155229_, BlockState p_155230_) {
+		super(p_155228_, p_155229_, p_155230_);
+	}
+
+	@Override
+	public void tick() {
+		if(!level.isClientSide) {
+
+			if(level.hasNeighborSignal(worldPosition) && !message.isEmpty() && charges > 0) {
 
 				delay--;
 
@@ -38,18 +43,23 @@ public class TileEntityFireworks extends TileEntity implements ITickable {
 					double offX = (mod / 3 - 1) * 0.3125;
 					double offZ = (mod % 3 - 1) * 0.3125;
 
-					EntityFireworks fireworks = new EntityFireworks(world, pos.getX() + 0.5 + offX, pos.getY() + 1.5, pos.getZ() + 0.5 + offZ, color, c);
-					world.spawnEntity(fireworks);
+					EntityFireworks fireworks = new EntityFireworks(level, worldPosition.getX() + 0.5 + offX,
+							worldPosition.getY() + 1.5, worldPosition.getZ() + 0.5 + offZ, color, c);
+					level.addFreshEntity(fireworks);
 
-					world.playSound(null, fireworks.posX, fireworks.posY, fireworks.posZ, HBMSoundHandler.rocketFlame, SoundCategory.BLOCKS, 3.0F, 1.0F);
+					level.playSound(null, fireworks.getX(), fireworks.getY(), fireworks.getZ(),
+							HBMSoundHandler.rocketFlame, SoundSource.BLOCKS, 3.0F, 1.0F);
 
 					charges--;
-					this.markDirty();
+//					this.remove(Entity.RemovalReason.DISCARDED);
 
-					NBTTagCompound data = new NBTTagCompound();
-					data.setString("type", "vanillaExt");
-					data.setString("mode", "flame");
-					PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, pos.getX() + 0.5 + offX, pos.getY() + 1.125, pos.getZ() + 0.5 + offZ), new TargetPoint(this.world.provider.getDimension(), pos.getX() + 0.5 + offX, pos.getY() + 1.125, pos.getZ() + 0.5 + offZ, 100));
+					CompoundTag data = new CompoundTag();
+					data.putString("type", "vanillaExt");
+					data.putString("mode", "flame");
+//					PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, pos.getX() + 0.5 + offX,
+//							pos.getY() + 1.125, pos.getZ() + 0.5 + offZ),
+//							new TargetPoint(this.world.provider.getDimension(), pos.getX() + 0.5 + offX,
+//									pos.getY() + 1.125, pos.getZ() + 0.5 + offZ, 100));
 
 					index++;
 
@@ -67,19 +77,19 @@ public class TileEntityFireworks extends TileEntity implements ITickable {
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound compound) {
-		this.charges = compound.getInteger("charges");
-		this.color = compound.getInteger("color");
+	public void load(CompoundTag compound) {
+		this.charges = compound.getInt("charges");
+		this.color = compound.getInt("color");
 		this.message = compound.getString("message");
-		super.readFromNBT(compound);
+		super.load(compound);
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-		compound.setInteger("charges", charges);
-		compound.setInteger("color", color);
-		compound.setString("message", message);
-		return super.writeToNBT(compound);
-	}
+	public void saveAdditional(CompoundTag compound) {
+		compound.putInt("charges", charges);
+		compound.putInt("color", color);
+		compound.putString("message", message);
+        super.saveAdditional(compound);
+    }
 
 }

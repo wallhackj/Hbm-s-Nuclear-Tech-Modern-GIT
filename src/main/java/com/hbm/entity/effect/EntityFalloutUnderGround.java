@@ -18,6 +18,7 @@ import com.hbm.entity.logic.IChunkLoader;
 import com.hbm.main.MainRegistry;
 import com.hbm.blocks.generic.WasteLog;
 
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.ForgeChunkManager.Ticket;
 import net.minecraftforge.common.ForgeChunkManager.Type;
@@ -76,7 +77,7 @@ public class EntityFalloutUnderGround extends Entity implements IChunkLoader {
 	public boolean falloutRainDoFlood = false;
 	public boolean falloutRainFire = false;
 
-	public EntityFalloutUnderGround(World p_i1582_1_) {
+	public EntityFalloutUnderGround(Level p_i1582_1_) {
 		super(p_i1582_1_);
 		this.setSize(4, 20);
 		this.ignoreFrustumCheck = false;

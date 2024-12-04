@@ -4,28 +4,21 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.ParticleBurstPacket;
-
-import net.minecraft.block.Block;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.projectile.EntityThrowable;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 
 public class EntityRubble extends EntityThrowable {
 	
 	public static final DataParameter<Integer> BLOCKID = EntityDataManager.createKey(EntityRubble.class, DataSerializers.VARINT);
 	public static final DataParameter<Integer> BLOCKMETA = EntityDataManager.createKey(EntityRubble.class, DataSerializers.VARINT);
 	
-	public EntityRubble(World p_i1773_1_)
+	public EntityRubble(Level p_i1773_1_)
     {
         super(p_i1773_1_);
     }
 
-    public EntityRubble(World p_i1774_1_, EntityLivingBase p_i1774_2_)
+    public EntityRubble(Level p_i1774_1_, LivingEntity p_i1774_2_)
     {
         super(p_i1774_1_, p_i1774_2_);
     }
@@ -36,7 +29,7 @@ public class EntityRubble extends EntityThrowable {
         this.dataManager.register(BLOCKMETA, (int)Integer.valueOf(0));
     }
 
-    public EntityRubble(World p_i1775_1_, double p_i1775_2_, double p_i1775_4_, double p_i1775_6_)
+    public EntityRubble(Level p_i1775_1_, double p_i1775_2_, double p_i1775_4_, double p_i1775_6_)
     {
         super(p_i1775_1_, p_i1775_2_, p_i1775_4_, p_i1775_6_);
     }

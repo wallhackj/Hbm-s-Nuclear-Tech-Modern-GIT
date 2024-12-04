@@ -2,72 +2,87 @@ package com.hbm.entity.item;
 
 import com.hbm.packet.AuxParticlePacketNT;
 import com.hbm.packet.PacketDispatcher;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Climate;
+import net.minecraft.world.phys.Vec3;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.MoverType;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
 public class EntityFireworks extends Entity {
 
 	int color;
 	int character;
 	
-	public EntityFireworks(World worldIn) {
-		super(worldIn);
+	public EntityFireworks(Level worldIn) {
+		super(null, worldIn);
 	}
 	
-	public EntityFireworks(World world, double x, double y, double z, int color, int character) {
-		super(world);
-		this.setPositionAndRotation(x, y, z, 0.0F, 0.0F);
+	public EntityFireworks(Level world, double x, double y, double z, int color, int character) {
+		super(null, world);
+//		this.setPositionAndRotation(x, y, z, 0.0F, 0.0F);]
+		this.setPos(x, y, z);
 		this.color = color;
 		this.character = character;
 	}
-	
+
 	@Override
-	public void onUpdate() {
-		this.move(MoverType.SELF, 0.0, 3.0D, 0.0);
-		this.world.spawnParticle(EnumParticleTypes.FLAME, posX, posY, posZ, 0.0, -0.3, 0.0);
-		this.world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, posX, posY, posZ, 0.0, -0.2, 0.0);
+	protected void defineSynchedData() {
 
-		if(!world.isRemote) {
+	}
 
-			ticksExisted++;
+	@Override
+	public void tick() {
+		super.tick();
+		this.move(MoverType.SELF, new Vec3(0.0D,3.0D, 0.0D));
+		this.level().addParticle(ParticleTypes.FLAME, this.getX(), this.getY(), this.getZ(), 0.0, -0.3, 0.0);
+		this.level().addParticle(ParticleTypes.SMOKE, this.getX(), this.getY(), this.getZ(), 0.0, -0.2, 0.0);
 
-			if(this.ticksExisted > 30) {
+		if(!level().isClientSide) {
 
-				this.world.playSound(null, posX, posY, posZ, SoundEvents.ENTITY_FIREWORK_BLAST, SoundCategory.NEUTRAL, 20, 1F + this.rand.nextFloat() * 0.2F);
+			tickCount++;
 
-				this.setDead();
-				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "fireworks");
-				data.setInteger("color", color);
-				data.setInteger("char", character);
-				PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, posX, posY, posZ), new TargetPoint(this.world.provider.getDimension(), posX, posY, posZ, 300));
+			if(this.tickCount > 30) {
+
+				this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.FIREWORK_ROCKET_BLAST,
+						SoundSource.NEUTRAL, 20, 1F + this.random.nextFloat() * 0.2F);
+
+				this.remove(RemovalReason.DISCARDED);
+				CompoundTag data = new CompoundTag();
+				data.putString("type", "fireworks");
+				data.putInt("color", color);
+				data.putInt("char", character);
+//				PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, posX, posY, posZ),
+//						new Climate.TargetPoint(this.level().provider.getDimension(), posX, posY, posZ, 300));
 			}
 		}
 	}
 
-	@Override
+//	@Override
 	protected void entityInit() {
 	}
 
 	@Override
-	protected void readEntityFromNBT(NBTTagCompound compound) {
-		this.character = compound.getInteger("char");
-		this.color = compound.getInteger("color");
-		this.ticksExisted = compound.getInteger("ticksExisted");
+	protected void readAdditionalSaveData(CompoundTag compound) {
+		this.character = compound.getInt("char");
+		this.color = compound.getInt("color");
+		this.tickCount = compound.getInt("ticksExisted");
 	}
 
 	@Override
-	protected void writeEntityToNBT(NBTTagCompound compound) {
-		compound.setInteger("char", character);
-		compound.setInteger("color", color);
-		compound.setInteger("ticksExisted", ticksExisted);
+	protected void addAdditionalSaveData(CompoundTag compoundTag) {
+
+	}
+
+	//	@Override
+	protected void writeEntityToNBT(CompoundTag compound) {
+		compound.putInt("char", character);
+		compound.putInt("color", color);
+		compound.putInt("ticksExisted", tickCount);
 	}
 
 }
