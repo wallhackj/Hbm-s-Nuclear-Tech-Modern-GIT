@@ -18,11 +18,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.item.alchemy.Potion;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
 
-public class HbmPotion extends Potion {
+public class HbmPotion extends MobEffect {
 
     public static HbmPotion taint;
     public static HbmPotion radiation;
@@ -65,7 +67,7 @@ public class HbmPotion extends Potion {
     }
 
     @Override
-    @SideOnly(MixinEnvironment.Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public int getStatusIconIndex() {
         ResourceLocation loc = new ResourceLocation(RefStrings.MODID, "textures/gui/potions.png");
         Minecraft.getMinecraft().renderEngine.bindTexture(loc);

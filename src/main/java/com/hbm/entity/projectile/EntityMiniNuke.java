@@ -7,33 +7,10 @@ import com.hbm.config.BombConfig;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.main.MainRegistry;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.IProjectile;
-import net.minecraft.entity.monster.EntityEnderman;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.network.play.server.SPacketChangeGameState;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class EntityMiniNuke extends Entity implements IProjectile {
 
@@ -59,24 +36,24 @@ public class EntityMiniNuke extends Entity implements IProjectile {
     private int knockbackStrength;
   
 
-    public EntityMiniNuke(World p_i1753_1_)
+    public EntityMiniNuke(Level p_i1753_1_)
     {
-        super(p_i1753_1_);
-        if(p_i1753_1_.isRemote)
+        super(null,p_i1753_1_);
+        if(p_i1753_1_.isClientSide)
         	setRenderDistanceWeight(10.0F);
         this.setSize(0.5F, 0.5F);
     }
 
-    public EntityMiniNuke(World p_i1754_1_, double p_i1754_2_, double p_i1754_4_, double p_i1754_6_)
+    public EntityMiniNuke(Level p_i1754_1_, double p_i1754_2_, double p_i1754_4_, double p_i1754_6_)
     {
-        super(p_i1754_1_);
-        if(p_i1754_1_.isRemote)
+        super(null,p_i1754_1_);
+        if(p_i1754_1_.isClientSide)
         	setRenderDistanceWeight(10.0F);
         this.setSize(0.5F, 0.5F);
         this.setPosition(p_i1754_2_, p_i1754_4_, p_i1754_6_);
     }
 
-    public EntityMiniNuke(World p_i1755_1_, EntityLivingBase p_i1755_2_, EntityLivingBase p_i1755_3_, float p_i1755_4_, float p_i1755_5_)
+    public EntityMiniNuke(Level p_i1755_1_, EntityLivingBase p_i1755_2_, EntityLivingBase p_i1755_3_, float p_i1755_4_, float p_i1755_5_)
     {
         super(p_i1755_1_);
         if(p_i1755_1_.isRemote)

@@ -7,6 +7,7 @@ import com.hbm.render.amlfrom1710.Vec3;
 import glmath.glm.vec._3.d.Vec3d;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
@@ -316,10 +317,10 @@ public class ExplosionNT extends Explosion {
         return this.affectedEntities;
     }
 
-    public EntityLivingBase getExplosivePlacedBy() {
+    public LivingEntity getExplosivePlacedBy() {
         return this.exploder == null ? null : (this.exploder instanceof EntityTNTPrimed ?
-                ((EntityTNTPrimed) this.exploder).getTntPlacedBy() : (this.exploder instanceof EntityLivingBase ?
-                (EntityLivingBase) this.exploder : null));
+                ((EntityTNTPrimed) this.exploder).getTntPlacedBy() : (this.exploder instanceof LivingEntity ?
+                (LivingEntity) this.exploder : null));
     }
 
     // unconventional name, sure, but it's short
@@ -328,7 +329,7 @@ public class ExplosionNT extends Explosion {
     }
 
     // this solution is a bit hacky but in the end easier to work with
-    public static enum ExAttrib {
+    public enum ExAttrib {
         FIRE,        //classic vanilla fire explosion
         BALEFIRE,    //same with but with balefire
         DIGAMMA,

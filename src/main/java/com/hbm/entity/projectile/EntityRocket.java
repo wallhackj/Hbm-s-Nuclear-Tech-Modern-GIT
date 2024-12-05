@@ -5,32 +5,10 @@ import java.util.List;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.explosion.ExplosionLarge;
 import com.hbm.items.ModItems;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.IProjectile;
-import net.minecraft.entity.monster.EntityEnderman;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.network.play.server.SPacketChangeGameState;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 
 public class EntityRocket extends Entity implements IProjectile {
 
@@ -56,19 +34,19 @@ public class EntityRocket extends Entity implements IProjectile {
     private int knockbackStrength;
 	public int explosionSize = 5;
     
-	public EntityRocket(World worldIn) {
-		super(worldIn);
-		if(worldIn.isRemote)
+	public EntityRocket(Level worldIn) {
+		super(null, worldIn);
+		if(worldIn.isClientSide)
 			setRenderDistanceWeight(10.0D);
 		this.setSize(0.5F, 0.5F);
 	}
 	
-	public EntityRocket(World w, double x, double y, double z){
+	public EntityRocket(Level w, double x, double y, double z){
 		this(w);
 		this.setPosition(x, y, z);
 	}
 	
-	public EntityRocket(World w, EntityLivingBase shooter, EntityLivingBase shootingAt, float velocity, float inaccuracy){
+	public EntityRocket(Level w, EntityLivingBase shooter, EntityLivingBase shootingAt, float velocity, float inaccuracy){
 		this(w);
 		this.shootingEntity = shooter;
 
@@ -123,8 +101,8 @@ public class EntityRocket extends Entity implements IProjectile {
         this.shoot(this.motionX, this.motionY, this.motionZ, velocity * 1.5F, 1.0F);
 	}
 	
-	public EntityRocket(World world, int x, int y, int z, double mx, double my, double mz, double grav) {
-        super(world);
+	public EntityRocket(Level world, int x, int y, int z, double mx, double my, double mz, double grav) {
+        super(null,world);
     	this.posX = x + 0.5F;
     	this.posY = y + 0.5F;
     	this.posZ = z + 0.5F;

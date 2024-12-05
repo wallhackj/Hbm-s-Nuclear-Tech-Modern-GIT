@@ -10,32 +10,40 @@ import com.hbm.main.MainRegistry;
 import com.hbm.potion.HbmPotion;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 
 public class BlockTaint extends Block {
-
-	public static final PropertyInteger TEXTURE = PropertyInteger.create("taintage", 0, 15);
+	public static final IntegerProperty TEXTURE = IntegerProperty.create("taintage", 0, 15);
 	
 	public BlockTaint(Material m, String s) {
-		super(m);
-		this.setTickRandomly(true);
-		this.setUnlocalizedName(s);
-		this.setRegistryName(s);
-		this.setCreativeTab(MainRegistry.controlTab);
-		this.setDefaultState(this.blockState.getBaseState().withProperty(TEXTURE, 0));
+//		super(m);
+//		this.setTickRandomly(true);
+//		this.setUnlocalizedName(s);
+//		this.setRegistryName(s);
+//		this.setCreativeTab(MainRegistry.controlTab);
+//		this.setDefaultState(this.blockState.getBaseState().withProperty(TEXTURE, 0));
+		super(BlockBehaviour.Properties.of().randomTicks());
+		this.registerDefaultState(this.defaultBlockState().setValue(TEXTURE, 0));
 		ModBlocks.ALL_BLOCKS.add(this);
 	}
 	
-	@Override
+//	@Override
 	public void updateTick(Level world, BlockPos pos1, BlockState state, Random rand) {
-
 		int meta = state.getValue(TEXTURE);
     	if(!world.isClientSide && meta < 15) {
     		BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
@@ -44,10 +52,10 @@ public class BlockTaint extends Block {
 	    		int b = rand.nextInt(11) + pos1.getY() - 5;
 	    		int c = rand.nextInt(11) + pos1.getZ() - 5;
 	    		pos.offset(a, b, c);
-	            if(world.getBlockState(pos).getBlock().isReplaceable(world, pos) &&
-						!world.getBlockState(pos).getMaterial().isLiquid() && BlockTaint.hasPosNeightbour(world, pos))
-	            	world.setBlockAndUpdate(pos, ModBlocks.taint
-							.getBlockState().getBaseState().withProperty(TEXTURE, meta + 1), 2);
+	            if(world.getBlockState(pos).canBeReplaced() && !world.getBlockState(pos).liquid() &&
+						BlockTaint.hasPosNeightbour(world, pos))
+	            	world.setBlock(pos, ModBlocks.taint.defaultBlockState()
+							.setValue(TEXTURE, meta + 1), 2);
 	    	}
 	            
 		    for(int i = 0; i < 85; i++) {
@@ -55,19 +63,16 @@ public class BlockTaint extends Block {
 		    	int b = rand.nextInt(7) + pos1.getY() - 3;
 		    	int c = rand.nextInt(7) + pos1.getZ() - 3;
 		    	pos.offset(a, b, c);
-	           	if(world.getBlockState(pos)
-						.getBlock().isReplaceable(world, pos) &&
-						!world.getBlockState(pos)
-								.getMaterial().isLiquid() &&
+	           	if(world.getBlockState(pos).canBeReplaced() && !world.getBlockState(pos).liquid() &&
 						BlockTaint.hasPosNeightbour(world, pos))
-		           	world.setBlockAndUpdate(pos, ModBlocks.taint
-							.getBlockState().getBaseState().withProperty(TEXTURE, meta + 1), 2);
+		           	world.setBlock(pos, ModBlocks.taint
+							.defaultBlockState().setValue(TEXTURE, meta + 1), 2);
 		    }
     	}
 	}
 
 	private static boolean checkAttachment(Level world, BlockPos pos){
-		if(!world.isAirBlock(pos)){
+		if(!world.isEmptyBlock(pos)){
             return world.getBlockState(pos).getBlock() != ModBlocks.taint;
     	}
     	return false;
@@ -84,80 +89,80 @@ public class BlockTaint extends Block {
 					checkAttachment(world, pos.offset(0, 0, -1));
 	}
 
-	@Override
+//	@Override
 	public AABB getSelectedBoundingBox(BlockState state, Level worldIn, BlockPos pos) {
 		return new AABB(pos, pos);
 	}
 
-	@Override
-	public AABB getCollisionBoundingBox(BlockState blockState, BlockGetter worldIn, BlockPos pos) {
-		return NULL_AABB;
+//	@Override
+	public VoxelShape getCollisionBoundingBox(BlockState blockState, BlockGetter worldIn, BlockPos pos) {
+		return Shapes.empty();
 	}
 
-	@Override
+//	@Override
 	public boolean isCollidable(){
 		return true;
 	}
 
-	@Override
+//	@Override
 	public boolean isReplaceable(BlockGetter worldIn, BlockPos pos){
 		return false;
 	}
 
 
-	@Override
+//	@Override
 	public void onEntityCollidedWithBlock(Level world, BlockPos pos, BlockState state, Entity entity) {
-		int meta = world.getBlockState(pos).getBlock().getMetaFromState(state);
-		int level = 15 - meta;
+		int meta = state.getValue(TEXTURE);
+		int levelEffect = 15 - meta;
 		
     	List<ItemStack> list = new ArrayList<ItemStack>();
-    	PotionEffect effect = new PotionEffect(HbmPotion.taint, 15 * 20, level);
+		MobEffectInstance effect = new MobEffectInstance(HbmPotion.taint, 15 * 20, levelEffect);
     	effect.setCurativeItems(list);
     	
-    	if(entity instanceof EntityLivingBase) {
-    		if(world.rand.nextInt(50) == 0) {
-    			((EntityLivingBase)entity).addPotionEffect(effect);
+    	if(entity instanceof LivingEntity) {
+    		if(world.random.nextInt(50) == 0) {
+    			((LivingEntity)entity).addEffect(effect);
     		}
     	}
     	
-    	if(entity instanceof EntityCreeper) {
-    		EntityTaintedCreeper creep = new EntityTaintedCreeper(world);
-    		creep.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
+    	if(entity instanceof Creeper creeper) {
+    		EntityTaintedCreeper taintedCreeper = new EntityTaintedCreeper(world);
+			taintedCreeper.moveTo(entity.getX(), entity.getY(), entity.getZ(), entity.getYRot(), entity.getXRot());
 
     		if(!world.isClientSide) {
-    			entity.setDead();
-    			world.spawnEntity(creep);
+    			entity.remove(Entity.RemovalReason.DISCARDED);
+    			world.addFreshEntity(taintedCreeper);
     		}
     	}
 	}
 	
-	@Override
+//	@Override
 	public void addInformation(ItemStack stack, Level player, List<String> tooltip, TooltipFlag advanced) {
 		tooltip.add("DO NOT TOUCH, BREATHE OR STARE AT. RUN!");
 	}
 
-	@Override
-	protected BlockStateContainer createBlockState() {
-		return new BlockStateContainer(this, TEXTURE);
+//	@Override
+	protected BlockState createBlockState() {
+		return new BlockState(this, null, null);
 	}
 	
-	@Override
+//	@Override
 	public int getMetaFromState(BlockState state) {
 		return state.getValue(TEXTURE);
 	}
 
-	@Override
+//	@Override
 	public BlockState getStateFromMeta(int meta) {
-		return this.defaultBlockState().withProperty(TEXTURE, meta);
+		return this.defaultBlockState().setValue(TEXTURE, meta);
 	}
 	
-	@Override
+//	@Override
 	public void neighborChanged(BlockState state, Level world, BlockPos pos, Block blockIn, BlockPos fromPos) {
 		if(!BlockTaint.hasPosNeightbour(world, pos) && !world.isClientSide)
 			world.removeBlock(pos, false);
 	}
 	
-	@Override
+//	@Override
 	public boolean causesSuffocation(BlockState state) {
 		return true;
 	}

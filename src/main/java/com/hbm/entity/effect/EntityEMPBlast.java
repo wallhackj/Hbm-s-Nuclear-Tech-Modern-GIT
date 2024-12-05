@@ -1,13 +1,8 @@
 package com.hbm.entity.effect;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 
 public class EntityEMPBlast extends Entity {
 	
@@ -26,7 +21,7 @@ public class EntityEMPBlast extends Entity {
     	scale = 0;
 	}
 	
-	public EntityEMPBlast(World p_i1582_1_, int maxAge) {
+	public EntityEMPBlast(Level p_i1582_1_, int maxAge) {
 		this(p_i1582_1_);
 		this.setMaxAge(maxAge);
 	}

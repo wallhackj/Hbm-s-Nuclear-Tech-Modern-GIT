@@ -6,7 +6,9 @@ import com.hbm.explosion.ExplosionChaos;
 import com.hbm.explosion.ExplosionNukeGeneric;
 import com.hbm.interfaces.IBomb;
 import com.hbm.lib.HBMSoundHandler;
+import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -16,14 +18,15 @@ import net.minecraft.world.level.block.state.BlockState;
 public class BombFloat extends Block implements IBomb {
 
 	public BombFloat(Material materialIn, String s) {
-		super(materialIn);
-		this.setUnlocalizedName(s);
-		this.setRegistryName(s);
+        super(null);
+//		super(materialIn);
+//		this.setUnlocalizedName(s);
+//		this.setRegistryName(s);
 		
 		ModBlocks.ALL_BLOCKS.add(this);
 	}
 	
-	@Override
+//	@Override
 	public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
         if (worldIn.isBlockIndirectlyGettingPowered(pos) > 0)
         {
@@ -34,7 +37,7 @@ public class BombFloat extends Block implements IBomb {
 	@Override
 	public void explode(Level world, BlockPos pos) {
 		world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.sparkShoot,
-				SoundCategory.BLOCKS, 5.0f, world.random.nextFloat() * 0.2F + 0.9F);
+				SoundSource.BLOCKS, 5.0f, world.random.nextFloat() * 0.2F + 0.9F);
 		
 		if(!world.isClientSide) {
 			world.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
@@ -48,7 +51,7 @@ public class BombFloat extends Block implements IBomb {
     			wave.posX = pos.getX() + 0.5;
     			wave.posY = pos.getY() + 0.5;
     			wave.posZ = pos.getZ() + 0.5;
-    			world.spawnEntity(wave);
+    			world.addFreshEntity(wave);
     		}
 		}
 	}

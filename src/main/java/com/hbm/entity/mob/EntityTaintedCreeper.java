@@ -3,44 +3,41 @@ package com.hbm.entity.mob;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.bomb.BlockTaint;
 import com.hbm.config.GeneralConfig;
-import com.hbm.entity.mob.ai.EntityAITaintedCreeperSwell;
 import com.hbm.interfaces.IRadiationImmune;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIAttackMelee;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
-import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAIWander;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
-import net.minecraft.entity.effect.EntityLightningBolt;
-import net.minecraft.entity.monster.EntityMob;
-import net.minecraft.entity.passive.EntityOcelot;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.ai.goal.*;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.NotNull;
 
-public class EntityTaintedCreeper extends EntityMob implements IRadiationImmune {
+
+public class EntityTaintedCreeper extends Creeper implements IRadiationImmune {
 	
-	private static final DataParameter<Integer> STATE = EntityDataManager.<Integer>createKey(EntityTaintedCreeper.class, DataSerializers.VARINT);
-    private static final DataParameter<Boolean> POWERED = EntityDataManager.<Boolean>createKey(EntityTaintedCreeper.class, DataSerializers.BOOLEAN);
-    private static final DataParameter<Boolean> IGNITED = EntityDataManager.<Boolean>createKey(EntityTaintedCreeper.class, DataSerializers.BOOLEAN);
+	private static final EntityDataAccessor<Integer> STATE = SynchedEntityData.defineId(EntityTaintedCreeper.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> POWERED = SynchedEntityData.defineId(EntityTaintedCreeper.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> IGNITED = SynchedEntityData.defineId(EntityTaintedCreeper.class, EntityDataSerializers.BOOLEAN);
+
 	 /**
      * Time when this creeper was last in an active state (Messed up code here, probably causes creeper animation to go
      * weird)
@@ -52,28 +49,36 @@ public class EntityTaintedCreeper extends EntityMob implements IRadiationImmune 
     /** Explosion radius for this creeper. */
     private int explosionRadius = 20;
     private static final String __OBFID = "CL_00001684";
-	public EntityTaintedCreeper(World world) {
-		super(world);
-			this.tasks.addTask(1, new EntityAISwimming(this));
-	        this.tasks.addTask(2, new EntityAITaintedCreeperSwell(this));
-	        this.tasks.addTask(3, new EntityAIAttackMelee(this, 1.0D, false));
-	        this.tasks.addTask(4, new EntityAIWander(this, 0.8D));
-	        this.tasks.addTask(5, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
-	        this.tasks.addTask(6, new EntityAILookIdle(this));
-	        this.targetTasks.addTask(1, new EntityAINearestAttackableTarget<EntityPlayer>(this, EntityPlayer.class, true));
-	        this.targetTasks.addTask(2, new EntityAIHurtByTarget(this, false));
-	        this.targetTasks.addTask(3, new EntityAINearestAttackableTarget<EntityOcelot>(this, EntityOcelot.class, true));
+	public EntityTaintedCreeper(Level world) {
+		super(null, world);
+        this.goalSelector.addGoal(1, new FloatGoal(this));
+//        this.goalSelector.addGoal(2, new EntityAITaintedCreeperSwell(this));
+        this.goalSelector.addGoal(3, new MeleeAttackGoal(this, 1.0D, false));
+        this.goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 0.8D));
+        this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
+        this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, true));
+//			this.tasks.addTask(1, new EntityAISwimming(this));
+//	        this.tasks.addTask(2, new EntityAITaintedCreeperSwell(this));
+//	        this.tasks.addTask(3, new EntityAIAttackMelee(this, 1.0D, false));
+//	        this.tasks.addTask(4, new EntityAIWander(this, 0.8D));
+//	        this.tasks.addTask(5, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
+//	        this.tasks.addTask(6, new EntityAILookIdle(this));
+//	        this.targetTasks.addTask(1, new EntityAINearestAttackableTarget<EntityPlayer>(this, EntityPlayer.class, true));
+//	        this.targetTasks.addTask(2, new EntityAIHurtByTarget(this, false));
+//	        this.targetTasks.addTask(3, new EntityAINearestAttackableTarget<EntityOcelot>(this, EntityOcelot.class, true));
 	}
 	
-	 @Override
+//	 @Override
 		protected void applyEntityAttributes()
 	    {
-	        super.applyEntityAttributes();
-	        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(15.0D);
-	        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.35D);
+//	        super.applyEntityAttributes();
+//	        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(15.0D);
+//	        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.35D);
+            super.getAttributes();
 	    }
 	 
-	 @Override
+//	 @Override
 	public boolean isAIDisabled() {
 		return false;
 	}
@@ -83,12 +88,13 @@ public class EntityTaintedCreeper extends EntityMob implements IRadiationImmune 
 	     */
 	    public int getMaxFallHeight()
 	    {
-	        return this.getAttackTarget() == null ? 3 : 3 + (int)(this.getHealth() - 1.0F);
+            this.getMeleeAttackReferencePosition();
+            return 3 + (int)(this.getHealth() - 1.0F);
 	    }
 
 	    public void fall(float distance, float damageMultiplier)
 	    {
-	        super.fall(distance, damageMultiplier);
+	        super.calculateFallDamage(distance, damageMultiplier);
 	        this.timeSinceIgnited = (int)((float)this.timeSinceIgnited + distance * 1.5F);
 
 	        if (this.timeSinceIgnited > this.fuseTime - 5)
@@ -96,44 +102,48 @@ public class EntityTaintedCreeper extends EntityMob implements IRadiationImmune 
 	            this.timeSinceIgnited = this.fuseTime - 5;
 	        }
 	    }
-	@Override
+//	@Override
 	protected void entityInit() {
-		super.entityInit();
-		this.dataManager.register(STATE, -1);
-		this.dataManager.register(POWERED, Boolean.FALSE);
-        this.dataManager.register(IGNITED, Boolean.FALSE);
+//		super.entityInit();
+//		this.dataManager.register(STATE, -1);
+//		this.dataManager.register(POWERED, Boolean.FALSE);
+//        this.dataManager.register(IGNITED, Boolean.FALSE);
+        super.defineSynchedData();
+        this.entityData.define(EntityTaintedCreeper.STATE, -1);
+        this.entityData.define(EntityTaintedCreeper.POWERED, false);
+        this.entityData.define(EntityTaintedCreeper.IGNITED, false);
 	}
 	
-	@Override
-	public void writeEntityToNBT(NBTTagCompound compound)
+//	@Override
+	public void writeEntityToNBT(CompoundTag compound)
     {
-        super.writeEntityToNBT(compound);
+        super.addAdditionalSaveData(compound);
 
-        if ((Boolean) this.dataManager.get(POWERED))
+        if (this.entityData.get(POWERED))
         {
-            compound.setBoolean("powered", true);
+            compound.putBoolean("powered", true);
         }
 
-        compound.setShort("Fuse", (short)this.fuseTime);
-        compound.setByte("ExplosionRadius", (byte)this.explosionRadius);
-        compound.setBoolean("ignited", this.hasIgnited());
+        compound.putShort("Fuse", (short)this.fuseTime);
+        compound.putByte("ExplosionRadius", (byte)this.explosionRadius);
+        compound.putBoolean("ignited", this.hasIgnited());
     }
 
     /**
      * (abstract) Protected helper method to read subclass entity data from NBT.
      */
-	@Override
-    public void readEntityFromNBT(NBTTagCompound compound)
+//	@Override
+    public void readEntityFromNBT(CompoundTag compound)
     {
-        super.readEntityFromNBT(compound);
-        this.dataManager.set(POWERED, compound.getBoolean("powered"));
+        super.readAdditionalSaveData(compound);
+        this.entityData.set(POWERED, compound.getBoolean("powered"));
 
-        if (compound.hasKey("Fuse", 99))
+        if (compound.contains("Fuse", 99))
         {
             this.fuseTime = compound.getShort("Fuse");
         }
 
-        if (compound.hasKey("ExplosionRadius", 99))
+        if (compound.contains("ExplosionRadius", 99))
         {
             this.explosionRadius = compound.getByte("ExplosionRadius");
         }
@@ -147,10 +157,10 @@ public class EntityTaintedCreeper extends EntityMob implements IRadiationImmune 
 	/**
      * Called to update the entity's position/logic.
      */
-    @Override
+//    @Override
 	public void onUpdate()
     {
-        if (this.isEntityAlive())
+        if (this.isAlive())
         {
             this.lastActiveTime = this.timeSinceIgnited;
 
@@ -163,7 +173,7 @@ public class EntityTaintedCreeper extends EntityMob implements IRadiationImmune 
 
             if (i > 0 && this.timeSinceIgnited == 0)
             {
-                this.playSound(SoundEvents.ENTITY_CREEPER_PRIMED, 1.0F * 30 / 75, 0.5F);
+                this.playSound(SoundEvents.CREEPER_HURT, 1.0F * 30 / 75, 0.5F);
                 
             }
 
@@ -181,9 +191,9 @@ public class EntityTaintedCreeper extends EntityMob implements IRadiationImmune 
             }
         }
 
-        super.onUpdate();
+        super.tick();
         
-        if(this.getHealth() < this.getMaxHealth() && this.ticksExisted % 10 == 0)
+        if(this.getHealth() < this.getMaxHealth() && this.tickCount % 10 == 0)
         {
         	this.heal(1.0F);
         }
@@ -194,27 +204,27 @@ public class EntityTaintedCreeper extends EntityMob implements IRadiationImmune 
      */   
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-    	return SoundEvents.ENTITY_CREEPER_HURT;
+    	return SoundEvents.CREEPER_HURT;
     }
 
     /**
      * Returns the sound this mob makes on death.
      */
 	@Override
-	protected SoundEvent getDeathSound() {
-		return SoundEvents.ENTITY_CREEPER_DEATH;
+	protected @NotNull SoundEvent getDeathSound() {
+		return SoundEvents.CREEPER_DEATH;
 	}
 
     /**
      * Called when the mob's health reaches 0.
      */
-    @Override
+//    @Override
 	public void onDeath(DamageSource p_70645_1_)
     {
-        super.onDeath(p_70645_1_);
+        super.die(p_70645_1_);
     }
 
-    @Override
+//    @Override
 	public boolean attackEntityAsMob(Entity p_70652_1_)
     {
         return true;
@@ -225,22 +235,22 @@ public class EntityTaintedCreeper extends EntityMob implements IRadiationImmune 
      */
     public boolean getPowered()
     {
-        return this.dataManager.get(POWERED);
+        return this.entityData.get(POWERED);
     }
 
     /**
      * Params: (Float)Render tick. Returns the intensity of the creeper's flash when it is ignited.
      */
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public float getCreeperFlashIntensity(float p_70831_1_)
     {
         return (this.lastActiveTime + (this.timeSinceIgnited - this.lastActiveTime) * p_70831_1_) / (this.fuseTime - 2);
     }
 
-    @Override
+//    @Override
 	protected Item getDropItem()
     {
-        return Item.getItemFromBlock(Blocks.TNT);
+        return Item.byBlock(Blocks.TNT);
     }
 
     /**
@@ -248,7 +258,7 @@ public class EntityTaintedCreeper extends EntityMob implements IRadiationImmune 
      */
     public int getCreeperState()
     {
-        return this.dataManager.get(STATE);
+        return this.entityData.get(STATE);
     }
 
     /**
@@ -256,98 +266,102 @@ public class EntityTaintedCreeper extends EntityMob implements IRadiationImmune 
      */
     public void setCreeperState(int i)
     {
-        this.dataManager.set(STATE, i);
+        this.entityData.set(STATE, i);
     }
 
     /**
      * Called when a lightning bolt hits the entity.
      */
-    @Override
-	public void onStruckByLightning(EntityLightningBolt p_70077_1_)
+//    @Override
+	public void onStruckByLightning(LightningBolt p_70077_1_)
     {
-        super.onStruckByLightning(p_70077_1_);
-        this.dataManager.set(POWERED, Boolean.TRUE);
+        super.thunderHit(null,p_70077_1_);
+        this.entityData.set(POWERED, Boolean.TRUE);
     }
 
     /**
      * Called when a player interacts with a mob. e.g. gets milk from a cow, gets into the saddle on a pig.
      */
     @Override
-	protected boolean processInteract(EntityPlayer player, EnumHand hand)
+	protected @NotNull InteractionResult mobInteract(Player player, @NotNull InteractionHand hand)
     {
-        ItemStack itemstack = player.inventory.getCurrentItem();
+        ItemStack itemstack = player.getItemInHand(hand);
 
-        if (itemstack != null && itemstack.getItem() == Items.FLINT_AND_STEEL)
+        if (itemstack.getItem() == Items.FLINT_AND_STEEL)
         {
-        	this.world.playSound(null, this.posX, this.posY, this.posZ, SoundEvents.ITEM_FLINTANDSTEEL_USE, this.getSoundCategory(), 1.0F, this.rand.nextFloat() * 0.4F + 0.8F);
-            player.swingArm(hand);
+        	this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.FLINTANDSTEEL_USE,
+                    this.getSoundSource(), 1.0F, this.random.nextFloat() * 0.4F + 0.8F);
+            player.swing(hand);
 
-            if (!this.world.isRemote)
+            if (!this.level().isClientSide)
             {
                 this.ignite();
-                itemstack.damageItem(1, player);
-                return true;
+                itemstack.setDamageValue(1);
             }
         }
 
-        return super.processInteract(player, hand);
+        return super.mobInteract(player, hand);
     }
    
 
     private void explode()
     {
-        if (!this.world.isRemote)
+        if (!this.level().isClientSide)
         {
 
             if (this.getPowered())
             {
             	this.explosionRadius *= 3;
             }
-            
-            world.newExplosion(this, posX, posY, posZ, 5.0F, false, false);
+
+            level().explode(this, getX(), getY(), getZ(), 5.0F, null);
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
             if(this.getPowered())
             {
 	            
 			    for(int i = 0; i < 255; i++) {
-			    	int a = rand.nextInt(15) + (int)posX - 7;
-			    	int b = rand.nextInt(15) + (int)posY - 7;
-			    	int c = rand.nextInt(15) + (int)posZ - 7;
-			    	pos.setPos(a, b, c);
-			           if(world.getBlockState(pos).getBlock().isReplaceable(world, pos) && BlockTaint.hasPosNeightbour(world, pos)) {
+			    	int a = random.nextInt(15) + (int)getX() - 7;
+			    	int b = random.nextInt(15) + (int)getY() - 7;
+			    	int c = random.nextInt(15) + (int)getZ() - 7;
+			    	pos.move(a, b, c);
+			           if(level().getBlockState(pos).canBeReplaced() && BlockTaint.hasPosNeightbour(level(), pos)) {
 			        	   
 			        	   if(GeneralConfig.enableHardcoreTaint)
-			        		   world.setBlockState(pos, ModBlocks.taint.getBlockState().getBaseState().withProperty(BlockTaint.TEXTURE, rand.nextInt(3) + 5), 2);
+			        		   level().setBlock(pos, ModBlocks.taint.defaultBlockState().setValue(BlockTaint.TEXTURE,
+                                       random.nextInt(3) + 5), 2);
 			        	   else
-			        		   world.setBlockState(pos, ModBlocks.taint.getBlockState().getBaseState().withProperty(BlockTaint.TEXTURE, rand.nextInt(3)), 2);
+			        		   level().setBlock(pos, ModBlocks.taint.defaultBlockState().setValue(BlockTaint.TEXTURE,
+                                       random.nextInt(3)), 2);
 			           }
 			    }
 			    
             } else {
 	            
 			    for(int i = 0; i < 85; i++) {
-			    	int a = rand.nextInt(7) + (int)posX - 3;
-			    	int b = rand.nextInt(7) + (int)posY - 3;
-			    	int c = rand.nextInt(7) + (int)posZ - 3;
-			    	pos.setPos(a, b, c);
-			           if(world.getBlockState(pos).getBlock().isReplaceable(world, pos) && BlockTaint.hasPosNeightbour(world, pos)) {
+			    	int a = random.nextInt(7) + (int)getX() - 3;
+			    	int b = random.nextInt(7) + (int)getY() - 3;
+			    	int c = random.nextInt(7) + (int)getZ() - 3;
+			    	pos.move(a, b, c);
+			           if(level().getBlockState(pos).canBeReplaced() && BlockTaint.hasPosNeightbour(level(), pos)) {
 			        	   
 			        	   if(GeneralConfig.enableHardcoreTaint)
-			        		   world.setBlockState(pos, ModBlocks.taint.getBlockState().getBaseState().withProperty(BlockTaint.TEXTURE, rand.nextInt(6) + 10), 2);
+			        		   level().setBlock(pos, ModBlocks.taint.defaultBlockState().setValue(BlockTaint.TEXTURE,
+                                       random.nextInt(6) + 10), 2);
 			        	   else
-			        		   world.setBlockState(pos, ModBlocks.taint.getBlockState().getBaseState().withProperty(BlockTaint.TEXTURE, rand.nextInt(3) + 4), 2);
+			        		   level().setBlock(pos, ModBlocks.taint.defaultBlockState().setValue(BlockTaint.TEXTURE,
+                                       random.nextInt(3) + 4), 2);
 			           }
 			    }
             }
 
-            this.setDead();
+            this.discard();
         }
     }
     
     public void ignite() {
-        this.dataManager.set(IGNITED, Boolean.TRUE);
+        this.entityData.set(IGNITED, Boolean.TRUE);
     }
     public boolean hasIgnited(){
-    	return this.dataManager.get(IGNITED);
+    	return this.entityData.get(IGNITED);
     }
 }
