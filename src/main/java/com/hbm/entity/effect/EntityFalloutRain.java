@@ -21,6 +21,7 @@ import com.hbm.blocks.generic.WasteLog;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.Ticket;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
@@ -31,6 +32,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.world.ForgeChunkManager;
 
 import static net.minecraft.world.level.block.Blocks.AIR;
+import static net.minecraft.world.level.block.Blocks.STONE;
 
 
 public class EntityFalloutRain extends Entity implements IConstantRenderer, IChunkLoader {
@@ -61,12 +63,13 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 	public int falloutBallRadius = 0;
 
 	public EntityFalloutRain(Level world) {
-		super(world);
-		this.setSize(4, 20);
-		this.ignoreFrustumCheck = false;
-		this.isImmuneToFire = true;
+		super(null,world);
+//		this.setSize(4, 20);
+//		this.ignoreFrustumCheck = false;
+//		this.isImmuneToFire = true;
 
-		this.waterLevel = getInt(CompatibilityConfig.fillCraterWithWater.get(world.provider.getDimension()));
+		this.waterLevel = getInt(CompatibilityConfig.fillCraterWithWater
+				.get(world.provider.getDimension()));
 		if(this.waterLevel == 0){
 			this.waterLevel = world.getSeaLevel();
 		} else if(this.waterLevel < 0 && this.waterLevel > -world.getSeaLevel()){
@@ -76,9 +79,9 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 	}
 
 	public EntityFalloutRain(Level p_i1582_1_, int maxage) {
-		super(p_i1582_1_);
-		this.setSize(4, 20);
-		this.isImmuneToFire = true;
+		super(null,p_i1582_1_);
+//		this.setSize(4, 20);
+//		this.isImmuneToFire = true;
 	}
 
 	private static int getInt(Object e){
@@ -89,7 +92,8 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 
 	@Override
 	public AABB getRenderBoundingBox() {
-		return new AABB(this.getX(), this.getY(), this.getZ(), this.getX(), this.getY(), this.getZ());
+		return new AABB(this.getX(), this.getY(), this.getZ(), this.getX(),
+				this.getY(), this.getZ());
 	}
 
 	@Override
@@ -447,15 +451,15 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 				continue;
 
 			} else if(bblock instanceof BushBlock) {
-				if(world.getBlockState(pos.down()).getBlock() == Blocks.FARMLAND){
-					placeBlockFromDist(dist, ModBlocks.waste_dirt, pos.down());
+				if(level().getBlockState(pos.below()).getBlock() == Blocks.FARMLAND){
+					placeBlockFromDist(dist, ModBlocks.waste_dirt, pos.below());
 					placeBlockFromDist(dist, ModBlocks.waste_grass_tall, pos);
-				} else if(world.getBlockState(pos.down()).getBlock() instanceof BlockGrass){
-					placeBlockFromDist(dist, ModBlocks.waste_earth, pos.down());
+				} else if(level().getBlockState(pos.below()).getBlock() instanceof BlockGrass){
+					placeBlockFromDist(dist, ModBlocks.waste_earth, pos.below());
 					placeBlockFromDist(dist, ModBlocks.waste_grass_tall, pos);
-				} else if(world.getBlockState(pos.down()).getBlock() == Blocks.MYCELIUM){
-					placeBlockFromDist(dist, ModBlocks.waste_mycelium, pos.down());
-					world.setBlockState(pos, ModBlocks.mush.getDefaultState());
+				} else if(level().getBlockState(pos.below()).getBlock() == Blocks.MYCELIUM){
+					placeBlockFromDist(dist, ModBlocks.waste_mycelium, pos.below());
+					level().setBlockAndUpdate(pos, ModBlocks.mush.defaultBlockState());
 				}
 				continue;
 
@@ -483,22 +487,22 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 			}
 
 			else if(bblock == Blocks.CLAY) {
-				world.setBlockState(pos, Blocks.HARDENED_CLAY.getDefaultState());
+				level().setBlockAndUpdate(pos, Blocks.CLAY.defaultBlockState());
 				continue;
 			}
 
 			else if(bblock == Blocks.MOSSY_COBBLESTONE) {
-				world.setBlockState(pos, Blocks.COAL_ORE.getDefaultState());
+				level().setBlockAndUpdate(pos, Blocks.COAL_ORE.defaultBlockState());
 				continue;
 			}
 
 			else if(bblock == Blocks.COAL_ORE) {
 				if(dist < s5){
-					int ra = rand.nextInt(150);
+					int ra = random.nextInt(150);
 					if(ra < 7) {
-						world.setBlockState(pos, Blocks.DIAMOND_ORE.getDefaultState());
+						level().setBlockAndUpdate(pos, Blocks.DIAMOND_ORE.defaultBlockState());
 					} else if(ra < 10) {
-						world.setBlockState(pos, Blocks.EMERALD_ORE.getDefaultState());
+						level().setBlockAndUpdate(pos, Blocks.EMERALD_ORE.defaultBlockState());
 					}
 				}
 				continue;
@@ -508,9 +512,9 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 				if(dist < s0){
 					BlockHugeMushroom.EnumType meta = b.getValue(BlockHugeMushroom.VARIANT);
 					if(meta == BlockHugeMushroom.EnumType.STEM) {
-						world.setBlockState(pos, ModBlocks.mush_block_stem.getDefaultState());
+						level().setBlockAndUpdate(pos, ModBlocks.mush_block_stem.defaultBlockState());
 					} else {
-						world.setBlockState(pos, ModBlocks.mush_block.getDefaultState());
+						level().setBlockAndUpdate(pos, ModBlocks.mush_block.defaultBlockState());
 					}
 				}
 				continue;
@@ -518,59 +522,66 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 
 			else if(bblock instanceof BlockLog) {
 				if(dist < s0)
-					world.setBlockState(pos, ((WasteLog)ModBlocks.waste_log).getSameRotationState(b));
+					level().setBlockAndUpdate(pos, ((WasteLog)ModBlocks.waste_log).getSameRotationState(b));
 				continue;
 			}
 
-			else if(bmaterial == Material.WOOD && bblock != ModBlocks.waste_log && bblock != ModBlocks.waste_planks) {
+			else if(bmaterial == Material.WOOD && bblock != ModBlocks.waste_log &&
+					bblock != ModBlocks.waste_planks) {
 				if(dist < s0)
-					world.setBlockState(pos, ModBlocks.waste_planks.getDefaultState());
+					level().setBlockAndUpdate(pos, ModBlocks.waste_planks.defaultBlockState());
 				continue;
 			}
 			else if(b.getBlock() == ModBlocks.sellafield_4) {
-				world.setBlockState(pos, ModBlocks.sellafield_core.getStateFromMeta(world.rand.nextInt(4)));
+				level().setBlockAndUpdate(pos, ModBlocks.sellafield_core
+						.getStateFromMeta(level().random.nextInt(4)));
 				continue;
 			}
 			else if(b.getBlock() == ModBlocks.sellafield_3) {
-				world.setBlockState(pos, ModBlocks.sellafield_4.getStateFromMeta(world.rand.nextInt(4)));
+				level().setBlockAndUpdate(pos, ModBlocks.sellafield_4
+						.getStateFromMeta(level().random.nextInt(4)));
 				continue;
 			}
 			else if(b.getBlock() == ModBlocks.sellafield_2) {
-				world.setBlockState(pos, ModBlocks.sellafield_3.getStateFromMeta(world.rand.nextInt(4)));
+				level().setBlockAndUpdate(pos, ModBlocks.sellafield_3
+						.getStateFromMeta(level().random.nextInt(4)));
 				continue;
 			}
 			else if(b.getBlock() == ModBlocks.sellafield_1) {
-				world.setBlockState(pos, ModBlocks.sellafield_2.getStateFromMeta(world.rand.nextInt(4)));
+				level().setBlockAndUpdate(pos, ModBlocks.sellafield_2
+						.getStateFromMeta(level().random.nextInt(4)));
 				continue;
 			}
 			else if(b.getBlock() == ModBlocks.sellafield_0) {
-				world.setBlockState(pos, ModBlocks.sellafield_1.getStateFromMeta(world.rand.nextInt(4)));
+				level().setBlockAndUpdate(pos, ModBlocks.sellafield_1
+						.getStateFromMeta(level().random.nextInt(4)));
 				continue;
 			}
 			else if(b.getBlock() == ModBlocks.sellafield_slaked) {
-				world.setBlockState(pos, ModBlocks.sellafield_0.getStateFromMeta(world.rand.nextInt(4)));
+				level().setBlockAndUpdate(pos, ModBlocks.sellafield_0
+						.getStateFromMeta(level().random.nextInt(4)));
 				continue;
 			}
 			else if(b.getBlock() == Blocks.VINE) {
-				world.setBlockToAir(pos);
+				level().removeBlock(pos, false);
 				continue;
 			}
 			else if(bblock == ModBlocks.ore_uranium) {
 				if(dist <= s6){
-					if (rand.nextInt(VersatileConfig.getSchrabOreChance()) == 0)
-						world.setBlockState(pos, ModBlocks.ore_schrabidium.getDefaultState());
+					if (random.nextInt(VersatileConfig.getSchrabOreChance()) == 0)
+						level().setBlockAndUpdate(pos, ModBlocks.ore_schrabidium.defaultBlockState());
 					else
-						world.setBlockState(pos, ModBlocks.ore_uranium_scorched.getDefaultState());
+						level().setBlockAndUpdate(pos, ModBlocks.ore_uranium_scorched.defaultBlockState());
 				}
 				break;
 			}
 
 			else if(bblock == ModBlocks.ore_nether_uranium) {
 				if(dist <= s5){
-					if(rand.nextInt(VersatileConfig.getSchrabOreChance()) == 0)
-						world.setBlockState(pos, ModBlocks.ore_nether_schrabidium.getDefaultState());
+					if(random.nextInt(VersatileConfig.getSchrabOreChance()) == 0)
+						level().setBlockAndUpdate(pos, ModBlocks.ore_nether_schrabidium.defaultBlockState());
 					else
-						world.setBlockState(pos, ModBlocks.ore_nether_uranium_scorched.getDefaultState());
+						level().setBlockAndUpdate(pos, ModBlocks.ore_nether_uranium_scorched.defaultBlockState());
 				}
 				break;
 
@@ -578,28 +589,28 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 
 			else if(bblock == ModBlocks.ore_gneiss_uranium) {
 				if(dist <= s4){
-					if(rand.nextInt(VersatileConfig.getSchrabOreChance()) == 0)
-						world.setBlockState(pos, ModBlocks.ore_gneiss_schrabidium.getDefaultState());
+					if(random.nextInt(VersatileConfig.getSchrabOreChance()) == 0)
+						level().setBlockAndUpdate(pos, ModBlocks.ore_gneiss_schrabidium.defaultBlockState());
 					else
-						world.setBlockState(pos, ModBlocks.ore_gneiss_uranium_scorched.getDefaultState());
+						level().setBlockAndUpdate(pos, ModBlocks.ore_gneiss_uranium_scorched.defaultBlockState());
 				}
 				break;
 				// this piece stops the "stomp" from reaching below ground
 			}
 			else if(bblock == ModBlocks.brick_concrete) {
-				if(rand.nextInt(80) == 0)
-					world.setBlockState(pos, ModBlocks.brick_concrete_broken.getDefaultState());
+				if(random.nextInt(80) == 0)
+					level().setBlockAndUpdate(pos, ModBlocks.brick_concrete_broken.defaultBlockState());
 				break;
 				// this piece stops the "stomp" from reaching below ground
 			} 
-			else if(bblock.getExplosionResistance(null) > 300){
+			else if(bblock.getExplosionResistance() > 300){
 				break;
 			}
 		}
 		return new int[]{gapFound ? 1 : 0, lastGapHeight, contactHeight};
 	}
 
-	private int[] doNoFallout(MutableBlockPos pos, double dist){
+	private int[] doNoFallout(BlockPos.MutableBlockPos pos, double dist){
 		int stoneDepth = 0;
 		int maxStoneDepth = 6;
 
@@ -610,25 +621,25 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 		boolean gapFound = false;
 		for(int y = 255; y >= 0; y--) {
 			pos.setY(y);
-			IBlockState b = world.getBlockState(pos);
+			BlockState b = level().getBlockState(pos);
 			Block bblock = b.getBlock();
-			Material bmaterial = b.getMaterial();
+			Block bmaterial = b.getBlock();
 			lastReachedStone = reachedStone;
 
 			if(bblock.isCollidable() && contactHeight == 420)
 				contactHeight = Math.min(y+1, 255);
 			
-			if(reachedStone && bmaterial != Material.AIR){
+			if(reachedStone && bmaterial != AIR){
 				stoneDepth++;
 			}
 			else{
-				reachedStone = b.getMaterial() == Material.ROCK;
+				reachedStone = b.getBlock() == STONE;
 			}
 			if(reachedStone && stoneDepth > maxStoneDepth){
 				break;
 			}
 			
-			if(bmaterial == Material.AIR || bmaterial.isLiquid()){
+			if(bmaterial == AIR || bmaterial.isLiquid()){
 				if(y < contactHeight){
 					gapFound = true;
 					lastGapHeight = y;
@@ -639,46 +650,48 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 	}
 
 	public void placeBlockFromDist(double dist, Block b, BlockPos pos){
-		double ranDist = dist * (1D + world.rand.nextDouble()*0.2);
+		double ranDist = dist * (1D + level().random.nextDouble()*0.2D);
 		if(ranDist > s1)
-			world.setBlockState(pos, b.getStateFromMeta(0));
+			level().setBlockAndUpdate(pos, b.getStateFromMeta(0));
 		else if(ranDist > s2)
-			world.setBlockState(pos, b.getStateFromMeta(1));
+			level().setBlockAndUpdate(pos, b.getStateFromMeta(1));
 		else if(ranDist > s3)
-			world.setBlockState(pos, b.getStateFromMeta(2));
+			level().setBlockAndUpdate(pos, b.getStateFromMeta(2));
 		else if(ranDist > s4)
-			world.setBlockState(pos, b.getStateFromMeta(3));
+			level().setBlockAndUpdate(pos, b.getStateFromMeta(3));
 		else if(ranDist > s5)
-			world.setBlockState(pos, b.getStateFromMeta(4));
+			level().setBlockAndUpdate(pos, b.getStateFromMeta(4));
 		else if(ranDist > s6)
-			world.setBlockState(pos, b.getStateFromMeta(5));
+			level().setBlockAndUpdate(pos, b.getStateFromMeta(5));
 		else if(ranDist <= s6)
-			world.setBlockState(pos, b.getStateFromMeta(6));
+			level().setBlockAndUpdate(pos, b.getStateFromMeta(6));
 	}
 
-	private void flood(MutableBlockPos pos){
+	private void flood(BlockPos.MutableBlockPos pos){
 		if(CompatibilityConfig.doFillCraterWithWater && waterLevel > 1){
 			for(int y = waterLevel-1; y > 1; y--) {
 				pos.setY(y);
-				if(world.isAirBlock(pos) || world.getBlockState(pos).getBlock() == Blocks.FLOWING_WATER){
-					world.setBlockState(pos, Blocks.WATER.getDefaultState());
+				if(level().isEmptyBlock(pos) || level().getBlockState(pos)
+						.getBlock() == Blocks.WATER){
+					level().setBlockAndUpdate(pos, Blocks.WATER.defaultBlockState());
 				}
 			}
 		}
 	}
 
-	private void drain(MutableBlockPos pos){
+	private void drain(BlockPos.MutableBlockPos pos){
 		for(int y = 255; y > 1; y--) {
 			pos.setY(y);
-			if(!world.isAirBlock(pos) && (world.getBlockState(pos).getBlock() == Blocks.WATER || world.getBlockState(pos).getBlock() == Blocks.FLOWING_WATER)){
-				world.setBlockToAir(pos);
+			if(!level().isEmptyBlock(pos) && (level().getBlockState(pos).getBlock() == Blocks.WATER ||
+					level().getBlockState(pos).getBlock() == Blocks.WATER)){
+				level().removeBlock(pos, false);
 			}
 		}
 	}
 
 	private void stomp(BlockPos.MutableBlockPos pos, double dist) {
 		if(dist > s0){
-			if(world.rand.nextFloat() > 0.05F+(5F*(s0/dist)-4F)){
+			if(level().random.nextFloat() > 0.05F+(5F*(s0/dist)-4F)){
 				return;
 			}
 		}
@@ -690,7 +703,7 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 
 		if(dist < fallingRadius){
 			if(doDrop && gapData != null && gapData[0] == 1)
-				letFall(world, pos, gapData[1], gapData[2]);
+				letFall(level(), pos, gapData[1], gapData[2]);
 			if(doFlood)
 				flood(pos);
 			else
@@ -701,12 +714,12 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 	
 
 	@Override
-	protected void readEntityFromNBT(NBTTagCompound nbt) {
-		setScale(nbt.getInteger("scale"), nbt.getInteger("dropRadius"));
-		falloutBallRadius = nbt.getInteger("fBall");
-		if(nbt.hasKey("chunks"))
+	protected void readEntityFromNBT(CompoundTag nbt) {
+		setScale(nbt.getInt("scale"), nbt.getInt("dropRadius"));
+		falloutBallRadius = nbt.getInt("fBall");
+		if(nbt.contains("chunks"))
 			chunksToProcess.addAll(readChunksFromIntArray(nbt.getIntArray("chunks")));
-		if(nbt.hasKey("outerChunks"))
+		if(nbt.contains("outerChunks"))
 			outerChunksToProcess.addAll(readChunksFromIntArray(nbt.getIntArray("outerChunks")));
 		doFallout = nbt.getBoolean("doFallout");
 		doFlood = nbt.getBoolean("doFlood");
@@ -726,16 +739,16 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 		return coords;
 	}
 
-	@Override
-	protected void writeEntityToNBT(NBTTagCompound nbt) {
-		nbt.setInteger("scale", getScale());
-		nbt.setInteger("fBall", falloutBallRadius);
-		nbt.setInteger("dropRadius", fallingRadius);
-		nbt.setBoolean("doFallout", doFallout);
-		nbt.setBoolean("doFlood", doFlood);
+//	@Override
+	protected void writeEntityToNBT(CompoundTag nbt) {
+		nbt.putInt("scale", getScale());
+		nbt.putInt("fBall", falloutBallRadius);
+		nbt.putInt("dropRadius", fallingRadius);
+		nbt.putBoolean("doFallout", doFallout);
+		nbt.putBoolean("doFlood", doFlood);
 
-		nbt.setIntArray("chunks", writeChunksToIntArray(chunksToProcess));
-		nbt.setIntArray("outerChunks", writeChunksToIntArray(outerChunksToProcess));
+		nbt.putIntArray("chunks", writeChunksToIntArray(chunksToProcess));
+		nbt.putIntArray("outerChunks", writeChunksToIntArray(outerChunksToProcess));
 	}
 
 	private int[] writeChunksToIntArray(List<Long> coords) {
