@@ -9,28 +9,14 @@ import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.bomb.TileEntityCompactLauncher;
 import com.hbm.tileentity.machine.TileEntityDummy;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.AABB;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockContainer;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
 
-public class CompactLauncher extends BlockContainer implements IMultiBlock, IBomb {
+public class CompactLauncher extends Block implements IMultiBlock, IBomb {
 
-	public static final AxisAlignedBB COMPACT_BOX = new AxisAlignedBB(0, 1, 0, 1, 1, 1);
+	public static final AABB COMPACT_BOX = new AABB(0, 1, 0, 1, 1, 1);
 	
 	public CompactLauncher(Material materialIn, String s) {
 		super(materialIn);

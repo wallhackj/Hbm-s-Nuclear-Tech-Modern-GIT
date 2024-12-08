@@ -14,56 +14,67 @@ import com.hbm.packet.PacketDispatcher;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 
 
 public class BlockVolcano extends Block {
 
-	public static final PropertyInteger META = BlockDummyable.META;
+	public static final IntegerProperty META = BlockDummyable.META;
 	
 	public BlockVolcano(String s) {
-		super(Material.IRON);
-		this.setUnlocalizedName(s);
-		this.setRegistryName(s);
-		
-		ModBlocks.ALL_BLOCKS.add(this);
+//		super(Material.IRON);
+//		this.setUnlocalizedName(s);
+//		this.setRegistryName(s);
+//
+//		ModBlocks.ALL_BLOCKS.add(this);
+		super(BlockBehaviour.Properties.of().strength(5.0f, 10.0f).requiresCorrectToolForDrops());
+		this.registerDefaultState(this.stateDefinition.any().setValue(META, 0));
 	}
 	
-	@Override
-	public void getSubBlocks(CreativeTabs tab, NonNullList<ItemStack> items){
-		if(tab == CreativeTabs.SEARCH || tab == this.getCreativeTabToDisplayOn())
-			for(int i = 0; i < 4; ++i) {
-				items.add(new ItemStack(this, 1, i));
-			}
-	}
+//	@Override
+//	public void getSubBlocks(CreativeTabs tab, NonNullList<ItemStack> items){
+//		if(tab == CreativeTabs.SEARCH || tab == this.getCreativeTabToDisplayOn())
+//			for(int i = 0; i < 4; ++i) {
+//				items.add(new ItemStack(this, 1, i));
+//			}
+//	}
 	
-	@Override
+//	@Override
 	public void addInformation(ItemStack stack, Level player, List<String> tooltip, TooltipFlag advanced){
 		int meta = stack.getDamageValue();
 
-		tooltip.add(BlockVolcano.isGrowing(meta) ? (TextFormatting.RED + "DOES GROW") :
-				(TextFormatting.DARK_GRAY + "DOES NOT GROW"));
-		tooltip.add(BlockVolcano.isExtinguishing(meta) ? (TextFormatting.RED + "DOES EXTINGUISH") :
-				(TextFormatting.DARK_GRAY + "DOES NOT EXTINGUISH"));
+//		tooltip.add(BlockVolcano.isGrowing(meta) ? (TextFormatting.RED + "DOES GROW") :
+//				(TextFormatting.DARK_GRAY + "DOES NOT GROW"));
+//		tooltip.add(BlockVolcano.isExtinguishing(meta) ? (TextFormatting.RED + "DOES EXTINGUISH") :
+//				(TextFormatting.DARK_GRAY + "DOES NOT EXTINGUISH"));
+		tooltip.add(String.valueOf(Component.literal(isGrowing(meta) ? "DOES GROW" : "DOES NOT GROW")
+				.withStyle(Style.EMPTY.withColor(TextColor.fromRgb(isGrowing(meta) ? 0xFF0000 : 0x555555)))));
+		tooltip.add(String.valueOf(Component.literal(isExtinguishing(meta) ? "DOES EXTINGUISH" : "DOES NOT EXTINGUISH")
+				.withStyle(Style.EMPTY.withColor(TextColor.fromRgb(isExtinguishing(meta) ? 0xFF0000 : 0x555555)))));
 	}
 	
-	@Override
+//	@Override
 	public int tickRate(Level world) {
 		return 5;
 	}
 
-	@Override
+//	@Override
 	public void onBlockAdded(Level world, BlockPos pos, BlockState state){
 		if(!world.isClientSide)
-			world.scheduleUpdate(pos, this, this.tickRate(world));
+			world.scheduleTick(pos, this, this.tickRate(world));
 	}
 	
-	@Override
+//	@Override
 	public void updateTick(Level world, BlockPos pos, BlockState state, Random rand){
 		if(!world.isClientSide) {
 			int x = pos.getX();
@@ -99,7 +110,7 @@ public class BlockVolcano extends Block {
 		BlockPos pos = new BlockPos(rX, rY, rZ);
 		
 		if(world.getBlockState(pos).getBlock() == Blocks.AIR &&
-				world.getBlockState(pos.down()).getBlock() == ModBlocks.volcanic_lava_block)
+				world.getBlockState(pos.below()).getBlock() == ModBlocks.volcanic_lava_block)
 			world.setBlockAndUpdate(pos, ModBlocks.volcanic_lava_block.defaultBlockState());
 	}
 	
@@ -107,12 +118,14 @@ public class BlockVolcano extends Block {
 		
 		for(int i = 0; i < 3; i++) {
 			EntityShrapnel frag = new EntityShrapnel(world);
-			frag.setLocationAndAngles(x + 0.5, y + 1.5, z + 0.5, 0.0F, 0.0F);
-			frag.motionY = 1D + rand.nextDouble();
-			frag.motionX = rand.nextGaussian() * 0.2D;
-			frag.motionZ = rand.nextGaussian() * 0.2D;
+			frag.setPos(x + 0.5, y + 1.5, z + 0.5);
+			frag.setDeltaMovement(
+					rand.nextGaussian() * 0.2D,  // motionX
+					1D + rand.nextDouble(),      // motionY
+					rand.nextGaussian() * 0.2D   // motionZ
+			);
 			frag.setVolcano(true);
-			world.spawnEntity(frag);
+			world.addFreshEntity(frag);
 		}
 	}
 	
@@ -123,8 +136,8 @@ public class BlockVolcano extends Block {
 		CompoundTag dPart = new CompoundTag();
 		dPart.putString("type", "vanillaExt");
 		dPart.putString("mode", "volcano");
-		PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(dPart, x + 0.5, y + 10, z + 0.5),
-				new TargetPoint(world.provider.getDimension(), x + 0.5, y + 10, z + 0.5, 250));
+//		PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(dPart, x + 0.5, y + 10, z + 0.5),
+//				new TargetPoint(world.provider.getDimension(), x + 0.5, y + 10, z + 0.5, 250));
 	}
 	
 	private void updateVolcano(Level world, int x, int y, int z, Random rand, int meta) {
@@ -136,14 +149,14 @@ public class BlockVolcano extends Block {
 				
 				//raise the level for growing volcanos, spawn lava, schedule update at the new position
 				y++;
-				world.scheduleUpdate(pos, this, this.tickRate(world));
+				world.scheduleTick(pos, this, this.tickRate(world));
 				
 				for(int i = -1; i <= 1; i++) {
 					for(int j = -1; j <= 1; j++) {
 						for(int k = -1; k <= 1; k++) {
 							
 							if(i + j + k == 0) {
-								world.setBlockAndUpdate(pos, this.defaultBlockState().withProperty(META, meta), 3);
+								world.setBlock(pos, this.defaultBlockState().setValue(META, meta), 3);
 							} else {
 								world.setBlockAndUpdate(pos.offset(i, j, k),
 										ModBlocks.volcanic_lava_block.defaultBlockState());
@@ -160,7 +173,7 @@ public class BlockVolcano extends Block {
 		//if there's no progress, schedule an update on the current position
 		}
 		
-		world.scheduleUpdate(pos, this, this.tickRate(world));
+		world.scheduleTick(pos, this, this.tickRate(world));
 	}
 
 	public static final int META_STATIC_ACTIVE = 0;
@@ -201,8 +214,8 @@ public class BlockVolcano extends Block {
 	}
 	
 //	@Override
-	protected BlockStateContainer createBlockState(){
-		return new BlockStateContainer(this, META);
+	protected BlockState createBlockState(){
+		return new BlockState(this, null,null);
 	}
 	
 //	@Override
@@ -212,6 +225,6 @@ public class BlockVolcano extends Block {
 	
 //	@Override
 	public BlockState getStateFromMeta(int meta){
-		return this.defaultBlockState().withProperty(META, meta);
+		return this.defaultBlockState().setValue(META, meta);
 	}
 }
