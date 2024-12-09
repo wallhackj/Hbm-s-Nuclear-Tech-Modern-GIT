@@ -19,17 +19,36 @@ import com.hbm.main.MainRegistry;
 import com.hbm.packet.*;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import net.minecraft.client.renderer.texture.Tickable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.phys.AABB;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.templates.FluidTank;
 import net.minecraftforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
+import org.openjdk.nashorn.internal.runtime.regexp.joni.constants.Arguments;
 
 import java.util.List;
 
 
-@Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "OpenComputers")})
-public class TileEntityCompactLauncher extends TileEntityLoadedBase implements ITickable, IEnergyUser, IFluidHandler, ITankPacketAcceptor, SimpleComponent {
+//@Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "OpenComputers")})
+public class TileEntityCompactLauncher extends TileEntityLoadedBase
+        implements Tickable, IEnergyUser, IFluidHandler, ITankPacketAcceptor{
 
     public ItemStackHandler inventory;
 
@@ -51,10 +70,11 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase implements I
     private String customName;
 
     public TileEntityCompactLauncher() {
+        super(null, null, null);
         inventory = new ItemStackHandler(8) {
             @Override
             protected void onContentsChanged(int slot) {
-                markDirty();
+//                markDirty();
                 super.onContentsChanged(slot);
             }
         };
@@ -79,11 +99,12 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase implements I
         this.customName = name;
     }
 
-    public boolean isUseableByPlayer(EntityPlayer player) {
-        if (world.getTileEntity(pos) != this) {
+    public boolean isUseableByPlayer(Player player) {
+        if (level.getBlockEntity(worldPosition) != this) {
             return false;
         } else {
-            return player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64;
+            return player.distanceToSqr(worldPosition.getX() + 0.5D, worldPosition.getY() + 0.5D,
+                    worldPosition.getZ() + 0.5D) <= 64;
         }
     }
 
@@ -95,10 +116,10 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase implements I
         return (solid * i) / maxSolid;
     }
 
-    @Override
+//    @Override
     public void update() {
         updateTypes();
-        if (!world.isRemote) {
+        if (!level.isClientSide) {
 
             if (clearingTimer > 0) clearingTimer--;
             if (this.inputValidForTank(0, 2))
@@ -115,7 +136,7 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase implements I
                 if (inventory.getStackInSlot(4).getCount() <= 1) {
                     inventory.setStackInSlot(4, ItemStack.EMPTY);
                 }
-                inventory.getStackInSlot(4).splitStack(1);
+                inventory.getStackInSlot(4).split(1);
                 if (inventory.getStackInSlot(4).isEmpty()) {
                     inventory.setStackInSlot(4, ItemStack.EMPTY);
                 }
@@ -125,21 +146,21 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase implements I
             if (needsUpdate) {
                 needsUpdate = false;
             }
-            if (world.getTotalWorldTime() % 20 == 0)
+            if (level.getTotalWorldTime() % 20 == 0)
                 this.updateConnections();
 
-            PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos, power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
-            PacketDispatcher.wrapper.sendToAllAround(new AuxGaugePacket(pos, solid, 0), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
-            PacketDispatcher.wrapper.sendToAllAround(new AuxGaugePacket(pos, clearingTimer, 1), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
-            PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, new FluidTank[]{tanks[0], tanks[1]}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
+//            PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos, power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
+//            PacketDispatcher.wrapper.sendToAllAround(new AuxGaugePacket(pos, solid, 0), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
+//            PacketDispatcher.wrapper.sendToAllAround(new AuxGaugePacket(pos, clearingTimer, 1), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
+//            PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, new FluidTank[]{tanks[0], tanks[1]}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
             MissileStruct multipart = getStruct(inventory.getStackInSlot(0));
 
             if (multipart != null)
-                PacketDispatcher.wrapper.sendToAllAround(new TEMissileMultipartPacket(pos, multipart), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 200));
+//                PacketDispatcher.wrapper.sendToAllAround(new TEMissileMultipartPacket(pos, multipart), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 200));
             else
-                PacketDispatcher.wrapper.sendToAllAround(new TEMissileMultipartPacket(pos, new MissileStruct()), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 200));
+//                PacketDispatcher.wrapper.sendToAllAround(new TEMissileMultipartPacket(pos, new MissileStruct()), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 200));
             if (canLaunch()) {
-                MutableBlockPos mPos = new BlockPos.MutableBlockPos();
+                BlockPos.MutableBlockPos mPos = new BlockPos.MutableBlockPos();
                 outer:
                 for (int x = -1; x <= 1; x++) {
                     for (int z = -1; z <= 1; z++) {
@@ -153,7 +174,7 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase implements I
             }
         } else {
 
-            List<Entity> entities = world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(pos.getX() - 0.5, pos.getY(), pos.getZ() - 0.5, pos.getX() + 1.5, pos.getY() + 10, pos.getZ() + 1.5));
+            List<Entity> entities = level.getEntitiesWithinAABBExcludingEntity(null, new AABB(pos.getX() - 0.5, pos.getY(), pos.getZ() - 0.5, pos.getX() + 1.5, pos.getY() + 10, pos.getZ() + 1.5));
 
             for (Entity e : entities) {
 
@@ -169,19 +190,19 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase implements I
     }
 
     private void updateConnections() {
-        this.trySubscribe(world, pos.add(+2, 0, +1), ForgeDirection.EAST);
-        this.trySubscribe(world, pos.add(+2, 0, +1), ForgeDirection.EAST);
-        this.trySubscribe(world, pos.add(+2, 0, -1), ForgeDirection.EAST);
-        this.trySubscribe(world, pos.add(-2, 0, +1), ForgeDirection.WEST);
-        this.trySubscribe(world, pos.add(-2, 0, -1), ForgeDirection.WEST);
-        this.trySubscribe(world, pos.add(+1, 0, +2), ForgeDirection.NORTH);
-        this.trySubscribe(world, pos.add(-1, 0, +2), ForgeDirection.NORTH);
-        this.trySubscribe(world, pos.add(+1, 0, -2), ForgeDirection.SOUTH);
-        this.trySubscribe(world, pos.add(-1, 0, -2), ForgeDirection.SOUTH);
-        this.trySubscribe(world, pos.add(+1, -1, +1), ForgeDirection.DOWN);
-        this.trySubscribe(world, pos.add(+1, -1, -1), ForgeDirection.DOWN);
-        this.trySubscribe(world, pos.add(-1, -1, +1), ForgeDirection.DOWN);
-        this.trySubscribe(world, pos.add(-1, -1, -1), ForgeDirection.DOWN);
+        this.trySubscribe(level, worldPosition.offset(+2, 0, +1), ForgeDirection.EAST);
+        this.trySubscribe(level, worldPosition.offset(+2, 0, +1), ForgeDirection.EAST);
+        this.trySubscribe(level, worldPosition.offset(+2, 0, -1), ForgeDirection.EAST);
+        this.trySubscribe(level, worldPosition.offset(-2, 0, +1), ForgeDirection.WEST);
+        this.trySubscribe(level, worldPosition.offset(-2, 0, -1), ForgeDirection.WEST);
+        this.trySubscribe(level, worldPosition.offset(+1, 0, +2), ForgeDirection.NORTH);
+        this.trySubscribe(level, worldPosition.offset(-1, 0, +2), ForgeDirection.NORTH);
+        this.trySubscribe(level, worldPosition.offset(+1, 0, -2), ForgeDirection.SOUTH);
+        this.trySubscribe(level, worldPosition.offset(-1, 0, -2), ForgeDirection.SOUTH);
+        this.trySubscribe(level, worldPosition.offset(+1, -1, +1), ForgeDirection.DOWN);
+        this.trySubscribe(level, worldPosition.offset(+1, -1, -1), ForgeDirection.DOWN);
+        this.trySubscribe(level, worldPosition.offset(-1, -1, +1), ForgeDirection.DOWN);
+        this.trySubscribe(level, worldPosition.offset(-1, -1, -1), ForgeDirection.DOWN);
     }
 
     public boolean canLaunch() {
@@ -193,28 +214,34 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase implements I
 
     public void launch() {
 
-        world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.missileTakeoff, SoundCategory.BLOCKS, 10.0F, 1.0F);
+        level.playSound(null, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(),
+                HBMSoundHandler.missileTakeoff, SoundSource.BLOCKS, 10.0F, 1.0F);
 
-        int tX = inventory.getStackInSlot(1).getTagCompound().getInteger("xCoord");
+        int tX = inventory.getStackInSlot(1).getTagCompoun().getInteger("xCoord");
         int tZ = inventory.getStackInSlot(1).getTagCompound().getInteger("zCoord");
 
-        ItemMissile chip = (ItemMissile) Item.getItemById(ItemCustomMissile.readFromNBT(inventory.getStackInSlot(0), "chip"));
+        ItemMissile chip = (ItemMissile) Item.getId(Item.byId(ItemCustomMissile.readFromNBT(inventory.getStackInSlot(0),
+                "chip")));
         float c = (Float) chip.attributes[0];
         float f = 1.0F;
 
         if (getStruct(inventory.getStackInSlot(0)).fins != null) {
-            ItemMissile fins = (ItemMissile) Item.getItemById(ItemCustomMissile.readFromNBT(inventory.getStackInSlot(0), "stability"));
+            ItemMissile fins = (ItemMissile) Item.getItemById(ItemCustomMissile.readFromNBT(inventory.getStackInSlot(0),
+                    "stability"));
             f = (Float) fins.attributes[0];
         }
 
-        Vec3 target = Vec3.createVectorHelper(pos.getX() - tX, 0, pos.getZ() - tZ);
+        Vec3 target = Vec3.createVectorHelper(worldPosition.getX() - tX, 0,
+                worldPosition.getZ() - tZ);
         target.xCoord *= c * f;
         target.zCoord *= c * f;
 
-        target.rotateAroundY(world.rand.nextFloat() * 360);
+        target.rotateAroundY(level.random.nextFloat() * 360);
 
-        EntityMissileCustom missile = new EntityMissileCustom(world, pos.getX() + 0.5F, pos.getY() + 1.5F, pos.getZ() + 0.5F, tX + (int) target.xCoord, tZ + (int) target.zCoord, getStruct(inventory.getStackInSlot(0)));
-        world.spawnEntity(missile);
+        EntityMissileCustom missile = new EntityMissileCustom(level, worldPosition.getX() + 0.5F,
+                worldPosition.getY() + 1.5F, worldPosition.getZ() + 0.5F,
+                tX + (int) target.xCoord, tZ + (int) target.zCoord, getStruct(inventory.getStackInSlot(0)));
+        level.addFreshEntity(missile);
 
         subtractFuel();
         clearingTimer = clearingDuraction;
@@ -414,44 +441,44 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase implements I
         }
     }
 
-    @Override
-    public void readFromNBT(NBTTagCompound compound) {
-        if (compound.hasKey("inventory"))
-            inventory.deserializeNBT(compound.getCompoundTag("inventory"));
-        if (compound.hasKey("tanks"))
-            FFUtils.deserializeTankArray(compound.getTagList("tanks", 10), tanks);
-        if (compound.hasKey("tankType0"))
+//    @Override
+    public void readFromNBT(CompoundTag compound) {
+        if (compound.contains("inventory"))
+            inventory.deserializeNBT(compound.getCompound("inventory"));
+        if (compound.contains("tanks"))
+            FFUtils.deserializeTankArray(compound.getTag("tanks", 10), tanks);
+        if (compound.contains("tankType0"))
             tankTypes[0] = FluidRegistry.getFluid(compound.getString("tankType0"));
-        if (compound.hasKey("tankType1"))
+        if (compound.contains("tankType1"))
             tankTypes[1] = FluidRegistry.getFluid(compound.getString("tankType1"));
 
-        solid = compound.getInteger("solidfuel");
+        solid = compound.getInt("solidfuel");
         power = compound.getLong("power");
-        super.readFromNBT(compound);
+        super.saveAdditional(compound);
     }
 
-    @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        compound.setTag("inventory", inventory.serializeNBT());
-        compound.setTag("tanks", FFUtils.serializeTankArray(tanks));
+//    @Override
+    public CompoundTag writeToNBT(CompoundTag compound) {
+        compound.put("inventory", inventory.serializeNBT());
+        compound.put("tanks", FFUtils.serializeTankArray(tanks));
         if (tankTypes[0] != null)
-            compound.setString("tankType0", tankTypes[0].getName());
+            compound.putString("tankType0", tankTypes[0].getName());
         if (tankTypes[1] != null)
-            compound.setString("tankType1", tankTypes[1].getName());
+            compound.putString("tankType1", tankTypes[1].getName());
 
-        compound.setInteger("solidfuel", solid);
-        compound.setLong("power", power);
+        compound.putInt("solidfuel", solid);
+        compound.putLong("power", power);
 
         return super.writeToNBT(compound);
     }
 
     @Override
-    public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+    public AABB getRenderBoundingBox() {
+        return BlockEntity.INFINITE_EXTENT_AABB;
     }
 
-    @Override
-    @SideOnly(Side.CLIENT)
+//    @Override
+    @OnlyIn(Dist.CLIENT)
     public double getMaxRenderDistanceSquared() {
         return 65536.0D;
     }
@@ -499,8 +526,8 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase implements I
         return null;
     }
 
-    @Override
-    public void recievePacket(NBTTagCompound[] tags) {
+//    @Override
+    public void recievePacket(CompoundTag[] tags) {
         if (tags.length != 2) {
             return;
         } else {
@@ -509,8 +536,8 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase implements I
         }
     }
 
-    @Override
-    public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+//    @Override
+    public boolean hasCapability(Capability<?> capability, Direction facing) {
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
             return true;
         } else if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY) {
@@ -521,7 +548,7 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase implements I
     }
 
     @Override
-    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+    public <T> T getCapability(Capability<T> capability, Direction facing) {
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
             return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(inventory);
         } else if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY) {
@@ -533,14 +560,14 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase implements I
 
     public boolean setCoords(int x, int z) {
         if (!inventory.getStackInSlot(1).isEmpty() && (inventory.getStackInSlot(1).getItem() == ModItems.designator || inventory.getStackInSlot(1).getItem() == ModItems.designator_range || inventory.getStackInSlot(1).getItem() == ModItems.designator_manual)) {
-            NBTTagCompound nbt;
-            if (inventory.getStackInSlot(1).hasTagCompound())
-                nbt = inventory.getStackInSlot(1).getTagCompound();
+            CompoundTag nbt;
+            if (inventory.getStackInSlot(1).hasTag())
+                nbt = inventory.getStackInSlot(1).getTag();
             else
-                nbt = new NBTTagCompound();
-            nbt.setInteger("xCoord", x);
-            nbt.setInteger("zCoord", z);
-            inventory.getStackInSlot(1).setTagCompound(nbt);
+                nbt = new CompoundTag();
+            nbt.putInt("xCoord", x);
+            nbt.putInt("zCoord", z);
+            inventory.getStackInSlot(1).setTag(nbt);
             return true;
         }
         return false;
@@ -568,5 +595,45 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase implements I
             ((IBomb) b).explode(world, pos);
         }
         return new Object[]{null};
+    }
+
+    @Override
+    public void tick() {
+
+    }
+
+    @Override
+    public int getTanks() {
+        return 0;
+    }
+
+    @Override
+    public @NotNull FluidStack getFluidInTank(int i) {
+        return null;
+    }
+
+    @Override
+    public int getTankCapacity(int i) {
+        return 0;
+    }
+
+    @Override
+    public boolean isFluidValid(int i, @NotNull FluidStack fluidStack) {
+        return false;
+    }
+
+    @Override
+    public int fill(FluidStack fluidStack, FluidAction fluidAction) {
+        return 0;
+    }
+
+    @Override
+    public @NotNull FluidStack drain(FluidStack fluidStack, FluidAction fluidAction) {
+        return null;
+    }
+
+    @Override
+    public @NotNull FluidStack drain(int i, FluidAction fluidAction) {
+        return null;
     }
 }
