@@ -10,7 +10,9 @@ import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.bomb.TileEntityCompactLauncher;
 import com.hbm.tileentity.machine.TileEntityDummy;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 
 
@@ -26,8 +28,8 @@ public class CompactLauncher extends Block implements IMultiBlock, IBomb {
 		ModBlocks.ALL_BLOCKS.add(this);
 	}
 
-	@Override
-	public TileEntity createNewTileEntity(World worldIn, int meta) {
+//	@Override
+	public BlockEntity createNewTileEntity(Level worldIn, int meta) {
 		return new TileEntityCompactLauncher();
 	}
 

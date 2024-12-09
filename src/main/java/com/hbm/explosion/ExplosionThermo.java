@@ -327,16 +327,17 @@ public class ExplosionThermo {
 			world.removeBlock(pos, false);
 		
 		} else if(block == Blocks.PACKED_ICE){
-			world.setBlockAndUpdate(pos, Blocks.FLOWING_WATER.defaultBlockState());
+			world.setBlockAndUpdate(pos, Blocks.WATER.defaultBlockState());
 		
 		} else if(block == Blocks.ICE){
-			world.removeBlock(, false);
+			world.removeBlock(pos, false);
 		
 		} else if(block == Blocks.SAND){
 			world.setBlockAndUpdate(pos, Blocks.GLASS.defaultBlockState());
 		
 		} else if(block == Blocks.CLAY){
-			world.setBlockAndUpdate(pos, Blocks.STAINED_HARDENED_CLAY.defaultBlockState().withProperty(BlockColored.COLOR, EnumDyeColor.values()[world.rand.nextInt(16)]));
+			world.setBlockAndUpdate(pos, Blocks.CLAY.defaultBlockState().setValue(BlockColored.COLOR,
+					EnumDyeColor.values()[world.random.nextInt(16)]));
 		}
 	}
 	public static void snow(Level world, int x, int y, int z, int bound) {
@@ -363,10 +364,10 @@ public class ExplosionThermo {
     				if (ZZ<r22)
     				{
     					pos.move(X, Y + 1, Z);
-    					if(Blocks.SNOW_LAYER.canPlaceBlockAt(world, pos) &&
+    					if(Blocks.SNOW.canPlaceBlockAt(world, pos) &&
 								(world.getBlockState(pos).getBlock() == Blocks.AIR ||
 										world.getBlockState(pos).getBlock() == Blocks.FIRE)) {
-    						world.setBlockEntity(pos, Blocks.SNOW_LAYER.defaultBlockState());
+    						world.setBlockAndUpdate(pos, Blocks.SNOW.defaultBlockState());
     					}
     				}
     			}
