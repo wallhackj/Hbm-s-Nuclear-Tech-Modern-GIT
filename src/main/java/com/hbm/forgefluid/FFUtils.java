@@ -21,7 +21,14 @@ import com.hbm.render.RenderHelper;
 import com.hbm.tileentity.machine.TileEntityDummy;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.fluids.*;
 import net.minecraftforge.fluids.capability.IFluidHandler;
@@ -119,7 +126,8 @@ public class FFUtils {
      */
     private static void drawFull(Fluid f, int guiLeft, int guiTop, float zLevel, TextureAtlasSprite liquidIcon,
 								 int level, int sizeX, int offsetX, int offsetY, int sizeY) {
-        int color = f.getColor();
+//        int color = f.getColor();
+        int color = 0xFFFFFF;
         RenderHelper.setColor(color);
         RenderHelper.startDrawingTexturedQuads();
         for (int i = 0; i < level; i += 16) {
@@ -158,7 +166,8 @@ public class FFUtils {
     }
 
     public static void addFluidInfo(Fluid fluid, List<String> texts) {
-        int temp = fluid.getTemperature() - 273;
+//        int temp = fluid.getTemperature() - 273;
+        int temp = 273;
         if (temp != 27) {
             String tempColor = "";
             if (temp < -130) {
@@ -282,20 +291,20 @@ public class FFUtils {
      * @param tileEntity - the tile entity it is filling from
      * @param tank       - the fluid tank to fill from
      * @param world      - the world the filling is taking place in
-     * @param i          - x coord of place to fill
-     * @param j          - y coord of place to fill
-     * @param k          - z coord of place to fill
+//     * @param i          - x coord of place to fill
+//     * @param j          - y coord of place to fill
+//     * @param k          - z coord of place to fill
      * @param maxDrain   - the maximum amount that can be drained from the tank at a
      *                   time
      * @return Whether something was actually filled or not, or whether it needs
      * an update
      */
 
-    public static boolean fillFluid(TileEntity tileEntity, FluidTank tank, World world, BlockPos toFill, int maxDrain) {
+    public static boolean fillFluid(BlockEntity tileEntity, FluidTank tank, Level world, BlockPos toFill, int maxDrain) {
         if (tank.getFluidAmount() <= 0 || tank.getFluid() == null || tank.getFluid().getFluid() == null) {
             return false;
         }
-        TileEntity te = world.getTileEntity(toFill);
+        BlockEntity te = world.getBlockEntity(toFill);
 
         if (te != null && te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null)) {
             if (te instanceof TileEntityDummy) {
@@ -886,11 +895,11 @@ public class FFUtils {
         return false;
     }
 
-    public static NBTTagList serializeTankArray(FluidTank[] tanks) {
-        NBTTagList list = new NBTTagList();
+    public static ListTag serializeTankArray(FluidTank[] tanks) {
+        ListTag list = new ListTag();
         for (int i = 0; i < tanks.length; i++) {
             if (tanks[i] != null) {
-                NBTTagCompound tag = new NBTTagCompound();
+                CompoundTag tag = new CompoundTag();
                 tag.setByte("tank", (byte) i);
                 tanks[i].writeToNBT(tag);
                 list.appendTag(tag);

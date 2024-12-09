@@ -155,9 +155,9 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase
 //            PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, new FluidTank[]{tanks[0], tanks[1]}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
             MissileStruct multipart = getStruct(inventory.getStackInSlot(0));
 
-            if (multipart != null)
+//            if (multipart != null)
 //                PacketDispatcher.wrapper.sendToAllAround(new TEMissileMultipartPacket(pos, multipart), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 200));
-            else
+//            else
 //                PacketDispatcher.wrapper.sendToAllAround(new TEMissileMultipartPacket(pos, new MissileStruct()), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 200));
             if (canLaunch()) {
                 BlockPos.MutableBlockPos mPos = new BlockPos.MutableBlockPos();
@@ -165,7 +165,8 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase
                 for (int x = -1; x <= 1; x++) {
                     for (int z = -1; z <= 1; z++) {
 
-                        if (world.isBlockIndirectlyGettingPowered(mPos.setPos(pos.getX() + x, pos.getY(), pos.getZ() + z)) > 0) {
+                        if (level.hasNeighborSignal(mPos.move(worldPosition.getX() + x, worldPosition.getY(),
+                                worldPosition.getZ() + z))) {
                             launch();
                             break outer;
                         }
@@ -174,14 +175,18 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase
             }
         } else {
 
-            List<Entity> entities = level.getEntitiesWithinAABBExcludingEntity(null, new AABB(pos.getX() - 0.5, pos.getY(), pos.getZ() - 0.5, pos.getX() + 1.5, pos.getY() + 10, pos.getZ() + 1.5));
+            List<Entity> entities = level.getEntitiesWithinAABBExcludingEntity(null,
+                    new AABB(worldPosition.getX() - 0.5, worldPosition.getY(),
+                            worldPosition.getZ() - 0.5, worldPosition.getX() + 1.5,
+                            worldPosition.getY() + 10, worldPosition.getZ() + 1.5));
 
             for (Entity e : entities) {
 
                 if (e instanceof EntityMissileCustom) {
 
                     for (int i = 0; i < 15; i++)
-                        MainRegistry.proxy.spawnParticle(pos.getX() + 0.5, pos.getY() + 0.25, pos.getZ() + 0.5, "launchsmoke", null);
+                        MainRegistry.proxy.spawnParticle(worldPosition.getX() + 0.5, worldPosition.getY() + 0.25,
+                                worldPosition.getZ() + 0.5, "launchsmoke", null);
 
                     break;
                 }
@@ -217,8 +222,8 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase
         level.playSound(null, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(),
                 HBMSoundHandler.missileTakeoff, SoundSource.BLOCKS, 10.0F, 1.0F);
 
-        int tX = inventory.getStackInSlot(1).getTagCompoun().getInteger("xCoord");
-        int tZ = inventory.getStackInSlot(1).getTagCompound().getInteger("zCoord");
+        int tX = inventory.getStackInSlot(1).getTag().getInt("xCoord");
+        int tZ = inventory.getStackInSlot(1).getTag().getInt("zCoord");
 
         ItemMissile chip = (ItemMissile) Item.getId(Item.byId(ItemCustomMissile.readFromNBT(inventory.getStackInSlot(0),
                 "chip")));
@@ -327,7 +332,10 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase
 
         if (!inventory.getStackInSlot(1).isEmpty()) {
 
-            return (inventory.getStackInSlot(1).getItem() == ModItems.designator || inventory.getStackInSlot(1).getItem() == ModItems.designator_range || inventory.getStackInSlot(1).getItem() == ModItems.designator_manual) && inventory.getStackInSlot(1).hasTagCompound();
+            return (inventory.getStackInSlot(1).getItem() == ModItems.designator ||
+                    inventory.getStackInSlot(1).getItem() == ModItems.designator_range ||
+                    inventory.getStackInSlot(1).getItem() == ModItems.designator_manual) &&
+                    inventory.getStackInSlot(1).hasTag();
         }
 
         return false;
@@ -499,11 +507,11 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase
     }
 
     @Override
-    public IFluidTankProperties[] getTankProperties() {
+    public FluidTankProperties[] getTankProperties() {
         return new IFluidTankProperties[]{tanks[0].getTankProperties()[0], tanks[1].getTankProperties()[0]};
     }
 
-    @Override
+//    @Override
     public int fill(FluidStack resource, boolean doFill) {
         if (resource == null) {
             return 0;
@@ -516,12 +524,12 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase
         }
     }
 
-    @Override
+//    @Override
     public FluidStack drain(FluidStack resource, boolean doDrain) {
         return null;
     }
 
-    @Override
+//    @Override
     public FluidStack drain(int maxDrain, boolean doDrain) {
         return null;
     }
@@ -559,7 +567,9 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase
     }
 
     public boolean setCoords(int x, int z) {
-        if (!inventory.getStackInSlot(1).isEmpty() && (inventory.getStackInSlot(1).getItem() == ModItems.designator || inventory.getStackInSlot(1).getItem() == ModItems.designator_range || inventory.getStackInSlot(1).getItem() == ModItems.designator_manual)) {
+        if (!inventory.getStackInSlot(1).isEmpty() && (inventory.getStackInSlot(1).getItem() == ModItems.designator ||
+                inventory.getStackInSlot(1).getItem() == ModItems.designator_range ||
+                inventory.getStackInSlot(1).getItem() == ModItems.designator_manual)) {
             CompoundTag nbt;
             if (inventory.getStackInSlot(1).hasTag())
                 nbt = inventory.getStackInSlot(1).getTag();
@@ -575,7 +585,7 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase
 
     // opencomputers interface
 
-    @Override
+//    @Override
     public String getComponentName() {
         return "launchpad_compact";
     }
@@ -590,9 +600,9 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase
 
     @Callback(doc = "launch(); tries to launch the rocket")
     public Object[] launch(Context context, Arguments args) {
-        Block b = world.getBlockState(pos).getBlock();
+        Block b = level.getBlockState(worldPosition).getBlock();
         if (b instanceof IBomb) {
-            ((IBomb) b).explode(world, pos);
+            ((IBomb) b).explode(level, worldPosition);
         }
         return new Object[]{null};
     }
@@ -635,5 +645,10 @@ public class TileEntityCompactLauncher extends TileEntityLoadedBase
     @Override
     public @NotNull FluidStack drain(int i, FluidAction fluidAction) {
         return null;
+    }
+
+    @Override
+    public void recievePacket(CompoundTag[] tags) {
+
     }
 }

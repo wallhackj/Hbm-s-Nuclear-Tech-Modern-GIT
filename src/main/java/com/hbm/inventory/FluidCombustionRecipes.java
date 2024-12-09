@@ -4,9 +4,8 @@ import java.util.HashSet;
 import java.util.HashMap;
 
 import com.hbm.forgefluid.ModForgeFluids;
+import net.minecraft.world.level.material.Fluid;
 
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
 
 public class FluidCombustionRecipes {
 	
