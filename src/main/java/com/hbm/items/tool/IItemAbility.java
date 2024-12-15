@@ -1,10 +1,10 @@
 package com.hbm.items.tool;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.EnumHand;
-import net.minecraft.world.World;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 
 public interface IItemAbility {
 
-	public void breakExtraBlock(World world, int x, int y, int z, EntityPlayer player, int refX, int refY, int refZ, EnumHand hand);
+	public void breakExtraBlock(Level world, int x, int y, int z, Player player, int refX, int refY, int refZ, InteractionHand hand);
 }

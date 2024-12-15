@@ -14,14 +14,26 @@ import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.spongepowered.asm.mixin.MixinEnvironment;
+
+import java.util.Objects;
 
 
 public class HbmPotion extends MobEffect {
@@ -62,36 +74,40 @@ public class HbmPotion extends MobEffect {
 
     public static HbmPotion registerPotion(boolean isBad, int color, String name, int x, int y) {
         HbmPotion effect = new HbmPotion(isBad, color, name, x, y);
-        ForgeRegistries.MOB_EFFECTS.register(effect);
+        ForgeRegistries.MOB_EFFECTS.register(name, effect);
         return effect;
     }
 
-    @Override
+//    @Override
     @OnlyIn(Dist.CLIENT)
     public int getStatusIconIndex() {
         ResourceLocation loc = new ResourceLocation(RefStrings.MODID, "textures/gui/potions.png");
-        Minecraft.getMinecraft().renderEngine.bindTexture(loc);
-        return super.getStatusIconIndex();
+        Minecraft.getInstance()
+                .getTextureManager()
+                .bindForSetup(loc);
+//        return super.getEffectRendererInternal();
+        return 1;
     }
 
-    public void performEffect(EntityLivingBase entity, int level) {
+    public void performEffect(LivingEntity entity, int level) {
 
         if (this == taint) {
-            if (!(entity instanceof EntityTaintedCreeper) && entity.world.rand.nextInt(80) == 0)
-                entity.attackEntityFrom(ModDamageSource.taint, (level + 1));
+            if (!(entity instanceof EntityTaintedCreeper) && entity.level().random.nextInt(80) == 0)
+                entity.hurt(ModDamageSource.taint, (level + 1));
 
-            if (GeneralConfig.enableHardcoreTaint && !entity.world.isRemote && CompatibilityConfig.isWarDim(entity.world)) {
+            if (GeneralConfig.enableHardcoreTaint && !entity.level().isClientSide &&
+                    CompatibilityConfig.isWarDim(entity.level())) {
 
-                int x = (int) (entity.posX - 1);
-                int y = (int) entity.posY;
-                int z = (int) (entity.posZ);
+                int x = (int) (entity.getX() - 1);
+                int y = (int) entity.getY();
+                int z = (int) (entity.getZ());
                 BlockPos pos = new BlockPos(x, y, z);
 
-                if (entity.world.getBlockState(pos).getBlock()
-                        .isReplaceable(entity.world, pos) &&
-                        BlockTaint.hasPosNeightbour(entity.world, pos)) {
+                if (entity.level().getBlockState(pos).canBeReplaced() &&
+                        BlockTaint.hasPosNeightbour(entity.level(), pos)) {
 
-                    entity.world.setBlockState(pos, ModBlocks.taint.getBlockState().getBaseState().withProperty(BlockTaint.TEXTURE, 14), 2);
+                    entity.level().setBlock(pos, ModBlocks.taint.defaultBlockState()
+                            .setValue(BlockTaint.TEXTURE, 14), 2);
                 }
             }
         }
@@ -99,45 +115,49 @@ public class HbmPotion extends MobEffect {
             ContaminationUtil.contaminate(entity, HazardType.RADIATION, ContaminationType.CREATIVE, (float) (level + 1F) * 0.05F);
         }
         if (this == radaway) {
-            if (entity.hasCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null))
-                entity.getCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null).decreaseRads((level + 1) * 0.05F);
+//            if (entity.hasCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null))
+//                entity.getCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null).decreaseRads((level + 1) * 0.05F);
         }
         if (this == bang) {
-            if (CompatibilityConfig.isWarDim(entity.world)) {
-                entity.attackEntityFrom(ModDamageSource.bang, 10000 * (level + 1));
+            if (CompatibilityConfig.isWarDim(entity.level())) {
+                entity.hurt(ModDamageSource.bang, 10000 * (level + 1));
 
-                if (!(entity instanceof EntityPlayer)) {
-                    entity.onDeath(ModDamageSource.bang);
+                if (!(entity instanceof Player)) {
+                    entity.die(ModDamageSource.bang);
                     entity.setHealth(0);
                 }
             }
-            entity.world.playSound(null, new BlockPos(entity), HBMSoundHandler.laserBang, SoundCategory.AMBIENT, 100.0F, 1.0F);
-            ExplosionLarge.spawnParticles(entity.world, entity.posX, entity.posY, entity.posZ, 10);
+            entity.level().playSound(null, entity.getOnPos(), HBMSoundHandler.laserBang, SoundSource.AMBIENT,
+                    100.0F, 1.0F);
+            ExplosionLarge.spawnParticles(entity.level(), entity.getX(), entity.getY(), entity.getZ(), 10);
         }
         if (this == lead) {
 
-            entity.attackEntityFrom(ModDamageSource.lead, (level + 1));
+            entity.hurt(ModDamageSource.lead, (level + 1));
         }
         if (this == telekinesis) {
 
-            int remaining = entity.getActivePotionEffect(this).getDuration();
+            int remaining = Objects.requireNonNull(entity.getEffect(this)).getDuration();
 
             if (remaining > 1) {
-                entity.motionX = entity.motionX + (entity.getRNG().nextFloat() - 0.5) * (level + 1) * 0.5;
-                entity.motionY = entity.motionY + (entity.getRNG().nextFloat() - 0.5) * (level + 1) * 0.5;
-                entity.motionZ = entity.motionZ + (entity.getRNG().nextFloat() - 0.5) * (level + 1) * 0.5;
+                Vec3 motion = entity.getDeltaMovement();
+
+                double newMotionX = motion.x + (entity.getRandom().nextFloat() - 0.5) * (level + 1) * 0.5;
+                double newMotionY = motion.y + (entity.getRandom().nextFloat() - 0.5) * (level + 1) * 0.5;
+                double newMotionZ = motion.z + (entity.getRandom().nextFloat() - 0.5) * (level + 1) * 0.5;
+
+                entity.setDeltaMovement(newMotionX, newMotionY, newMotionZ);
             }
         }
-        if (this == phosphorus && !entity.world.isRemote && CompatibilityConfig.isWarDim(entity.world)) {
+        if (this == phosphorus && !entity.level().isClientSide && CompatibilityConfig.isWarDim(entity.level())) {
 
-            entity.setFire(level + 1);
+            entity.setSecondsOnFire(level + 1);
         }
 
-        if (this == potionsickness && !entity.world.isRemote) {
+        if (this == potionsickness && !entity.level().isClientSide) {
 
-            if (entity.world.rand.nextInt(128) == 0) {
-                entity.addPotionEffect(new PotionEffect(MobEffects.NAUSEA, 8 * 20, 0));
-            }
+            if (entity.level().random.nextInt(128) == 0) {
+                entity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 8 * 20, 0));            }
         }
     }
 

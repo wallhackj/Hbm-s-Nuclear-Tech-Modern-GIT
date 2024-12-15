@@ -10,30 +10,19 @@ import com.hbm.handler.WeaponAbility;
 import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.util.I18nUtil;
-
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.EnumRarity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemSword;
-import net.minecraft.network.play.client.CPacketPlayerDigging;
-import net.minecraft.network.play.server.SPacketBlockChange;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+
 
 public class ItemSwordAbility extends ItemSword implements IItemAbility {
 
@@ -104,7 +93,7 @@ public class ItemSwordAbility extends ItemSword implements IItemAbility {
 	}
 
 	@Override
-	public void breakExtraBlock(World world, int x, int y, int z, EntityPlayer playerEntity, int refX, int refY, int refZ, EnumHand hand) {
+	public void breakExtraBlock(Level world, int x, int y, int z, Player playerEntity, int refX, int refY, int refZ, InteractionHand hand) {
 		BlockPos pos = new BlockPos(x, y, z);
 		if(world.isAirBlock(pos))
 			return;
@@ -115,12 +104,12 @@ public class ItemSwordAbility extends ItemSword implements IItemAbility {
 		EntityPlayerMP player = (EntityPlayerMP) playerEntity;
 		ItemStack stack = player.getHeldItem(hand);
 
-		IBlockState block = world.getBlockState(pos);
+		BlockState block = world.getBlockState(pos);
 
 		if(!canHarvestBlock(block, stack))
 			return;
 
-		IBlockState refBlock = world.getBlockState(new BlockPos(refX, refY, refZ));
+		BlockState refBlock = world.getBlockState(new BlockPos(refX, refY, refZ));
 		float refStrength = ForgeHooks.blockStrength(refBlock, player, world, new BlockPos(refX, refY, refZ));
 		float strength = ForgeHooks.blockStrength(block, player, world, pos);
 
@@ -136,7 +125,7 @@ public class ItemSwordAbility extends ItemSword implements IItemAbility {
 			if(block.getBlock().removedByPlayer(block, world, pos, player, false))
 				block.getBlock().onBlockDestroyedByPlayer(world, pos, block);
 
-			if(!world.isRemote) {
+			if(!world.isClientSide) {
 				player.connection.sendPacket(new SPacketBlockChange(world, pos));
 			}
 			return;
@@ -144,7 +133,7 @@ public class ItemSwordAbility extends ItemSword implements IItemAbility {
 
 		player.getHeldItem(hand).onBlockDestroyed(world, block, pos, player);
 
-		if(!world.isRemote) {
+		if(!world.isClientSide) {
 
 			block.getBlock().onBlockHarvested(world, pos, block, player);
 
@@ -170,13 +159,16 @@ public class ItemSwordAbility extends ItemSword implements IItemAbility {
 				}
 			}
 
-			Minecraft.getMinecraft().getConnection().sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, new BlockPos(x, y, z), Minecraft.getMinecraft().objectMouseOver.sideHit));
+			Minecraft.getInstance()
+					.getConnection()
+					.send(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK,
+							new BlockPos(x, y, z), Minecraft.getInstance().objectMouseOver.sideHit));
 		}
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
+	@OnlyIn(Dist.CLIENT)
+	public void addInformation(ItemStack stack, Level worldIn, List<String> list, TooltipFlag flagIn) {
 		if(!this.hitAbility.isEmpty()) {
 
 			list.add(I18nUtil.resolveKey("tool.ability.weaponlist"));
