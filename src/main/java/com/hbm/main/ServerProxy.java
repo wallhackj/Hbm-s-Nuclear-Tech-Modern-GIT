@@ -5,19 +5,13 @@ import java.io.File;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.sound.AudioWrapper;
-
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.registry.IRegistry;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 
 public class ServerProxy
 {
@@ -31,15 +25,15 @@ public class ServerProxy
 
 	public void spawnParticle(double x, double y, double z, String type, float[] args) { }
 	
-	public void spawnSFX(World world, double posX, double posY, double posZ, int type, Vec3 payload) { }
+	public void spawnSFX(Level world, double posX, double posY, double posZ, int type, Vec3 payload) { }
 
-	public void effectNT(NBTTagCompound data) { }
+	public void effectNT(CompoundTag data) { }
 	
 	public void registerMissileItems(IRegistry<ModelResourceLocation, IBakedModel> reg) { }
 
-	public AudioWrapper getLoopedSound(SoundEvent sound, SoundCategory cat, float x, float y, float z, float volume, float pitch) { return null; }
+	public AudioWrapper getLoopedSound(SoundEvent sound, SoundSource cat, float x, float y, float z, float volume, float pitch) { return null; }
 	
-	public AudioWrapper getLoopedSoundStartStop(World world, SoundEvent sound, SoundEvent start, SoundEvent stop, SoundCategory cat, float x, float y, float z, float volume, float pitch){return null;}
+	public AudioWrapper getLoopedSoundStartStop(Level world, SoundEvent sound, SoundEvent start, SoundEvent stop, SoundSource cat, float x, float y, float z, float volume, float pitch){return null;}
 	
 	public void preInit(FMLPreInitializationEvent evt) {}
 	
@@ -59,7 +53,7 @@ public class ServerProxy
 	public boolean getIsKeyPressed(EnumKeybind key) {
 		return false;
 	}
-	public EntityPlayer me() {
+	public Player me() {
 		return null;
 	}
 	

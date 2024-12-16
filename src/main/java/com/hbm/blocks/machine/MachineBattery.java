@@ -33,9 +33,10 @@ import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
 
-public class MachineBattery extends BlockContainer implements ILookOverlay {
+public class MachineBattery extends Block implements ILookOverlay {
 
 	public static final PropertyDirection FACING = BlockHorizontal.FACING;
 	private long maxPower;

@@ -217,7 +217,7 @@ public abstract class WeaponAbility {
 
                         living.dropItem(((WeightedRandomObject) WeightedRandom.getRandomItem(living.getRNG(),
                                 Arrays.asList(ammo))).asItem(), 1);
-                        world.addFreshEntity(new EntityXPOrb(world, living.posX, living.posY, living.posZ, 1));
+                        world.addFreshEntity(new EntityXPOrb(world, living.getX(), living.getY(), living.getZ(), 1));
                     }
 
                     if (player instanceof ServerPlayer) {

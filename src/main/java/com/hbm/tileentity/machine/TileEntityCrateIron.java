@@ -3,14 +3,10 @@ package com.hbm.tileentity.machine;
 import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemKeyPin;
 import com.hbm.lib.HBMSoundHandler;
-
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
 public class TileEntityCrateIron extends TileEntityLockableBase {
@@ -23,26 +19,28 @@ public class TileEntityCrateIron extends TileEntityLockableBase {
 		inventory = new ItemStackHandler(36){
 			@Override
 			protected void onContentsChanged(int slot) {
-				markDirty();
+//				markDirty();
 				super.onContentsChanged(slot);
 			}
 		};
 	}
 
-	public boolean canAccess(EntityPlayer player) {
+	public boolean canAccess(Player player) {
 		
 		if(!this.isLocked() || player == null) {
 			return true;
 		} else {
-			ItemStack stack = player.getHeldItemMainhand();
+			ItemStack stack = player.getMainHandItem();
 			
 			if(stack.getItem() instanceof ItemKeyPin && ItemKeyPin.getPins(stack) == this.lock) {
-	        	world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.lockOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);
+	        	level.playSound(null, player.getX(), player.getY(), player.getZ(), HBMSoundHandler.lockOpen,
+						SoundSource.BLOCKS, 1.0F, 1.0F);
 				return true;
 			}
 			
 			if(stack.getItem() == ModItems.key_red) {
-	        	world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.lockOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);
+	        	level.playSound(null, player.getX(), player.getY(), player.getZ(), HBMSoundHandler.lockOpen,
+						SoundSource.BLOCKS, 1.0F, 1.0F);
 				return true;
 			}
 			

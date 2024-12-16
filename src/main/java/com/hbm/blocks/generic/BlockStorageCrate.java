@@ -16,38 +16,13 @@ import com.hbm.tileentity.machine.TileEntityCrateSteel;
 import com.hbm.tileentity.machine.TileEntityCrateTungsten;
 import com.hbm.tileentity.machine.TileEntityCrateDesh;
 import com.hbm.tileentity.machine.TileEntitySafe;
-
-import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.items.IItemHandler;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockContainer;
-import net.minecraft.block.BlockHorizontal;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.properties.PropertyDirection;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Item;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.inventory.ISidedInventory;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
 
-public class BlockStorageCrate extends BlockContainer {
+public class BlockStorageCrate extends Block {
 
 	public static final PropertyDirection FACING = BlockHorizontal.FACING;
 	private static boolean dropInv = true;
@@ -62,7 +37,7 @@ public class BlockStorageCrate extends BlockContainer {
 	}
 
 	@Override
-	public TileEntity createNewTileEntity(World worldIn, int meta){
+	public BlockEntity createNewTileEntity(Level worldIn, int meta){
 		if(this == ModBlocks.crate_iron)
 			return new TileEntityCrateIron();
 		if(this == ModBlocks.crate_steel)
