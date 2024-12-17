@@ -245,7 +245,7 @@ public abstract class ToolAbility {
 			
 			//a band-aid on a gaping wound
 			if(block.getBlock() == Blocks.LIT_REDSTONE_ORE)
-				block = Blocks.REDSTONE_ORE.getDefaultState();
+				block = Blocks.REDSTONE_ORE.defaultBlockState();
 			
 			ItemStack stack = new ItemStack(block.getBlock(), 1, block.getBlock().getMetaFromState(block));
 			ItemStack result = ShredderRecipes.getShredderResult(stack);

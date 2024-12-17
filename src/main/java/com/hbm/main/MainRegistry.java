@@ -8,6 +8,14 @@ import java.util.List;
 import java.util.Random;
 import com.hbm.entity.item.EntityMovingPackage;
 import com.hbm.tileentity.network.*;
+import net.minecraft.core.Position;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.Ticket;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.common.world.ForgeChunkManager;
 import org.apache.logging.log4j.Logger;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockCrate;
@@ -352,8 +360,7 @@ import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fml.common.Mod;
 
-
-@Mod(modid = RefStrings.MODID, version = RefStrings.VERSION, name = RefStrings.NAME)
+@Mod(RefStrings.MODID)
 public class MainRegistry {
 	static {
 		HBMSoundHandler.init();
@@ -363,12 +370,12 @@ public class MainRegistry {
 	@SidedProxy(clientSide = RefStrings.CLIENTSIDE, serverSide = RefStrings.SERVERSIDE)
 	public static ServerProxy proxy;
 
-	@Mod.Instance(RefStrings.MODID)
+	@Mod(RefStrings.MODID)
 	public static MainRegistry instance;
 
 	public static Logger logger;
 
-	public static List<FFPipeNetwork> allPipeNetworks = new ArrayList<FFPipeNetwork>();
+	public static List<FFPipeNetwork> allPipeNetworks = new ArrayList<>();
 
 	// Creative Tabs
 	// ingots, nuggets, wires, machine parts
@@ -403,12 +410,17 @@ public class MainRegistry {
 	// Armor Materials
 	// Drillgon200: I have no idea what the two strings and the number at the
 	// end are.
-	public static ArmorMaterial enumArmorMaterialT45 = EnumHelper.addArmorMaterial(RefStrings.MODID + ":T45", RefStrings.MODID + ":T45", 150, new int[] { 3, 6, 8, 3 }, 0, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-	public static ArmorMaterial aMatBJ = EnumHelper.addArmorMaterial(RefStrings.MODID + ":BLACKJACK", RefStrings.MODID + ":HBM_BLACKJACK", 150, new int[] { 3, 6, 8, 3 }, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-	public static ArmorMaterial aMatAJR = EnumHelper.addArmorMaterial(RefStrings.MODID + ":T45AJR", RefStrings.MODID + ":T45AJR", 150, new int[] { 3, 6, 8, 3 }, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-
-	public static ArmorMaterial aMatRPA = EnumHelper.addArmorMaterial(RefStrings.MODID + ":RPA", RefStrings.MODID + ":RPA", 150, new int[] { 3, 6, 8, 3 }, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-	public static ArmorMaterial aMatHEV = EnumHelper.addArmorMaterial(RefStrings.MODID + ":HEV", RefStrings.MODID + ":HEV", 150, new int[] { 3, 6, 8, 3 }, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
+	public static ArmorMaterial enumArmorMaterialT45 = Helper.addArmorMaterial(RefStrings.MODID + ":T45",
+			RefStrings.MODID + ":T45", 150, new int[] { 3, 6, 8, 3 }, 0, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
+	public static ArmorMaterial aMatBJ = EnumHelper.addArmorMaterial(RefStrings.MODID + ":BLACKJACK",
+			RefStrings.MODID + ":HBM_BLACKJACK", 150, new int[] { 3, 6, 8, 3 }, 100,
+			SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
+	public static ArmorMaterial aMatAJR = EnumHelper.addArmorMaterial(RefStrings.MODID + ":T45AJR",
+			RefStrings.MODID + ":T45AJR", 150, new int[] { 3, 6, 8, 3 }, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
+	public static ArmorMaterial aMatRPA = EnumHelper.addArmorMaterial(RefStrings.MODID + ":RPA",
+			RefStrings.MODID + ":RPA", 150, new int[] { 3, 6, 8, 3 }, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
+	public static ArmorMaterial aMatHEV = EnumHelper.addArmorMaterial(RefStrings.MODID + ":HEV",
+			RefStrings.MODID + ":HEV", 150, new int[] { 3, 6, 8, 3 }, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
 	public static ArmorMaterial enumArmorMaterialHazmat = EnumHelper.addArmorMaterial(RefStrings.MODID + ":HAZMAT", RefStrings.MODID + ":HAZMAT", 60, new int[] { 1, 4, 5, 2 }, 5, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0.0F);
 	public static ArmorMaterial enumArmorMaterialHazmat2 = EnumHelper.addArmorMaterial(RefStrings.MODID + ":HAZMAT2", RefStrings.MODID + ":HAZMAT2", 60, new int[] { 1, 4, 5, 2 }, 5, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0.0F);
 	public static ArmorMaterial enumArmorMaterialHazmat3 = EnumHelper.addArmorMaterial(RefStrings.MODID + ":HAZMAT3", RefStrings.MODID + ":HAZMAT3", 60, new int[] { 1, 4, 5, 2 }, 5, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0.0F);
@@ -977,11 +989,11 @@ public class MainRegistry {
 		ForgeChunkManager.setForcedChunkLoadingCallback(this, new LoadingCallback() {
 
 			@Override
-			public void ticketsLoaded(List<Ticket> tickets, World world) {
+			public void ticketsLoaded(List<Ticket> tickets, Level world) {
 				for(Ticket ticket : tickets) {
 
-					if(ticket.getEntity() instanceof IChunkLoader) {
-						((IChunkLoader) ticket.getEntity()).init(ticket);
+					if(ticket.getType() instanceof IChunkLoader) {
+						((IChunkLoader) ticket.getType()).init(ticket);
 					}
 				}
 			}
@@ -1164,42 +1176,42 @@ public class MainRegistry {
 	private void registerDispenserBehaviors(){
 		BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(ModItems.grenade_generic, new BehaviorProjectileDispense() {
 			@Override
-            protected IProjectile getProjectileEntity(World p_82499_1_, IPosition p_82499_2_, ItemStack stack)
+            protected IProjectile getProjectileEntity(Level p_82499_1_, Position p_82499_2_, ItemStack stack)
             {
-                return new EntityGrenadeGeneric(p_82499_1_, p_82499_2_.getX(), p_82499_2_.getY(), p_82499_2_.getZ());
+                return new EntityGrenadeGeneric(p_82499_1_, p_82499_2_.x(), p_82499_2_.y(), p_82499_2_.z());
             }
         });
 		BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(ModItems.grenade_strong, new BehaviorProjectileDispense() {
 			@Override
-            protected IProjectile getProjectileEntity(World p_82499_1_, IPosition p_82499_2_, ItemStack stack)
+            protected Projectile getProjectileEntity(Level p_82499_1_, Position p_82499_2_, ItemStack stack)
             {
                 return new EntityGrenadeStrong(p_82499_1_, p_82499_2_.getX(), p_82499_2_.getY(), p_82499_2_.getZ());
             }
         });
 		BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(ModItems.grenade_frag, new BehaviorProjectileDispense() {
 			@Override
-            protected IProjectile getProjectileEntity(World p_82499_1_, IPosition p_82499_2_, ItemStack stack)
+            protected Projectile getProjectileEntity(Level p_82499_1_, Position p_82499_2_, ItemStack stack)
             {
                 return new EntityGrenadeFrag(p_82499_1_, p_82499_2_.getX(), p_82499_2_.getY(), p_82499_2_.getZ());
             }
         });
 		BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(ModItems.grenade_fire, new BehaviorProjectileDispense() {
 			@Override
-            protected IProjectile getProjectileEntity(World p_82499_1_, IPosition p_82499_2_, ItemStack stack)
+            protected Projectile getProjectileEntity(Level p_82499_1_, Position p_82499_2_, ItemStack stack)
             {
                 return new EntityGrenadeFire(p_82499_1_, p_82499_2_.getX(), p_82499_2_.getY(), p_82499_2_.getZ());
             }
         });
 		BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(ModItems.grenade_cluster, new BehaviorProjectileDispense() {
 			@Override
-            protected IProjectile getProjectileEntity(World p_82499_1_, IPosition p_82499_2_, ItemStack stack)
+            protected Projectile getProjectileEntity(Level p_82499_1_, Position p_82499_2_, ItemStack stack)
             {
                 return new EntityGrenadeCluster(p_82499_1_, p_82499_2_.getX(), p_82499_2_.getY(), p_82499_2_.getZ());
             }
         });
 		BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(ModItems.grenade_flare, new BehaviorProjectileDispense() {
 			@Override
-            protected IProjectile getProjectileEntity(World p_82499_1_, IPosition p_82499_2_, ItemStack stack)
+            protected Projectile getProjectileEntity(Level p_82499_1_, Position p_82499_2_, ItemStack stack)
             {
                 return new EntityGrenadeFlare(p_82499_1_, p_82499_2_.getX(), p_82499_2_.getY(), p_82499_2_.getZ());
             }

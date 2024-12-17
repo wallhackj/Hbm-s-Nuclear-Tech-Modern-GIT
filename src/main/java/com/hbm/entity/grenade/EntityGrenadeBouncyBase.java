@@ -2,75 +2,60 @@ package com.hbm.entity.grenade;
 
 import java.util.List;
 
-import org.apache.logging.log4j.Level;
-
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.config.GeneralConfig;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.amlfrom1710.Vec3;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockFence;
-import net.minecraft.block.BlockFenceGate;
-import net.minecraft.block.BlockWall;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.CrashReportCategory;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.IProjectile;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.ReportedException;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class EntityGrenadeBouncyBase extends Entity implements IProjectile {
+public abstract class EntityGrenadeBouncyBase extends Entity implements Projectile {
 
-	protected EntityLivingBase thrower;
+	protected LivingEntity thrower;
 	protected String throwerName;
 	protected int timer = 0;
 
-	public EntityGrenadeBouncyBase(World world) {
+	public EntityGrenadeBouncyBase(Level world) {
 		super(world);
 		this.setSize(0.25F, 0.25F);
 	}
 
-	public EntityGrenadeBouncyBase(World world, EntityLivingBase living, EnumHand hand) {
+	public EntityGrenadeBouncyBase(Level world, LivingEntity living, InteractionHand hand) {
 		super(world);
 		this.thrower = living;
 		this.setSize(0.25F, 0.25F);
-		this.setLocationAndAngles(living.posX, living.posY + (double) living.getEyeHeight(), living.posZ, living.rotationYaw, living.rotationPitch);
-		if (hand == EnumHand.MAIN_HAND) {
-			this.posX -= (double) (MathHelper.cos(this.rotationYaw / 180.0F * (float) Math.PI) * 0.16F);
-			this.posY -= 0.10000000149011612D;
-			this.posZ -= (double) (MathHelper.sin(this.rotationYaw / 180.0F * (float) Math.PI) * 0.16F);
+		this.setLocationAndAngles(living.getX(), living.getY() + (double) living.getEyeHeight(), living.getZ(),
+				living.rotationYaw, living.rotationPitch);
+
+		if (hand == InteractionHand.MAIN_HAND) {
+			this.getX() -= Math.cos(this.getYRot() / 180.0F * (float) Math.PI) * 0.16F;
+			this.getY() -= 0.10000000149011612D;
+			this.posZ -= (double) (Math.sin(this.rotationYaw / 180.0F * (float) Math.PI) * 0.16F);
 		} else {
-			this.posX += (double) (MathHelper.cos(this.rotationYaw / 180.0F * (float) Math.PI) * 0.16F);
+			this.posX += (double) (Math.cos(this.rotationYaw / 180.0F * (float) Math.PI) * 0.16F);
 			this.posY -= 0.10000000149011612D;
-			this.posZ += (double) (MathHelper.sin(this.rotationYaw / 180.0F * (float) Math.PI) * 0.16F);
+			this.posZ += (double) (Math.sin(this.rotationYaw / 180.0F * (float) Math.PI) * 0.16F);
 		}
 
 		this.setPosition(this.posX, this.posY, this.posZ);
 		float f = 0.4F;
-		this.motionX = (double) (-MathHelper.sin(this.rotationYaw / 180.0F * (float) Math.PI) * MathHelper.cos(this.rotationPitch / 180.0F * (float) Math.PI) * f);
-		this.motionZ = (double) (MathHelper.cos(this.rotationYaw / 180.0F * (float) Math.PI) * MathHelper.cos(this.rotationPitch / 180.0F * (float) Math.PI) * f);
-		this.motionY = (double) (-MathHelper.sin((this.rotationPitch + this.func_70183_g()) / 180.0F * (float) Math.PI) * f);
+		this.motionX = (double) (-Math.sin(this.rotationYaw / 180.0F * (float) Math.PI) * Math.cos(this.rotationPitch / 180.0F * (float) Math.PI) * f);
+		this.motionZ = (double) (Math.cos(this.rotationYaw / 180.0F * (float) Math.PI) * Math.cos(this.rotationPitch / 180.0F * (float) Math.PI) * f);
+		this.motionY = (double) (-Math.sin((this.rotationPitch + this.func_70183_g()) / 180.0F * (float) Math.PI) * f);
 		this.shoot(this.motionX, this.motionY, this.motionZ, this.func_70182_d(), 1.0F);
 		this.rotationPitch = 0;
         this.prevRotationPitch = 0;
 	}
 
-	public EntityGrenadeBouncyBase(World world, double posX, double posY, double posZ) {
+	public EntityGrenadeBouncyBase(Level world, double posX, double posY, double posZ) {
 		super(world);
 		this.setSize(0.25F, 0.25F);
 		this.setPosition(posX, posY, posZ);
@@ -80,7 +65,7 @@ public abstract class EntityGrenadeBouncyBase extends Entity implements IProject
 	protected void entityInit() {
 	}
 
-	@SideOnly(Side.CLIENT)
+	@OnlyIn(Dist.CLIENT)
 	public boolean isInRangeToRenderDist(double p_70112_1_) {
 		double d1 = this.getEntityBoundingBox().getAverageEdgeLength() * 4.0D;
 		d1 *= 64.0D;
@@ -100,7 +85,7 @@ public abstract class EntityGrenadeBouncyBase extends Entity implements IProject
 	}
 
 	public void shoot(double motionX, double motionY, double motionZ, float f0, float f1) {
-		float f2 = MathHelper.sqrt(motionX * motionX + motionY * motionY + motionZ * motionZ);
+		float f2 = Math.sqrt(motionX * motionX + motionY * motionY + motionZ * motionZ);
 		motionX /= (double) f2;
 		motionY /= (double) f2;
 		motionZ /= (double) f2;
@@ -157,7 +142,7 @@ public abstract class EntityGrenadeBouncyBase extends Entity implements IProject
 		float f = 0.98F;
 
 		if (this.onGround) {
-			BlockPos underPos = new BlockPos(MathHelper.floor(this.posX), MathHelper.floor(this.getEntityBoundingBox().minY) - 1, MathHelper.floor(this.posZ));
+			BlockPos underPos = new BlockPos(Math.floor(this.posX), Math.floor(this.getEntityBoundingBox().minY) - 1, Math.floor(this.posZ));
 			net.minecraft.block.state.IBlockState underState = this.world.getBlockState(underPos);
 			f = underState.getBlock().getSlipperiness(underState, this.world, underPos, this) * 0.98F;
 		}
@@ -219,13 +204,13 @@ public abstract class EntityGrenadeBouncyBase extends Entity implements IProject
 			double d3 = y;
 			double d4 = z;
 
-			List<AxisAlignedBB> list1 = this.world.getCollisionBoxes(this, this.getEntityBoundingBox().expand(x, y, z));
+			List<AABB> list1 = this.world.getCollisionBoxes(this, this.getEntityBoundingBox().expand(x, y, z));
 
 			if (y != 0.0D) {
 				int k = 0;
 
 				for (int l = list1.size(); k < l; ++k) {
-					y = ((AxisAlignedBB) list1.get(k)).calculateYOffset(this.getEntityBoundingBox(), y);
+					y = ((AABB) list1.get(k)).calculateYOffset(this.getEntityBoundingBox(), y);
 				}
 
 				this.setEntityBoundingBox(this.getEntityBoundingBox().offset(0.0D, y, 0.0D));
@@ -235,7 +220,7 @@ public abstract class EntityGrenadeBouncyBase extends Entity implements IProject
 				int j5 = 0;
 
 				for (int l5 = list1.size(); j5 < l5; ++j5) {
-					x = ((AxisAlignedBB) list1.get(j5)).calculateXOffset(this.getEntityBoundingBox(), x);
+					x = ((AABB) list1.get(j5)).calculateXOffset(this.getEntityBoundingBox(), x);
 				}
 
 				if (x != 0.0D) {
@@ -247,7 +232,7 @@ public abstract class EntityGrenadeBouncyBase extends Entity implements IProject
 				int k5 = 0;
 
 				for (int i6 = list1.size(); k5 < i6; ++k5) {
-					z = ((AxisAlignedBB) list1.get(k5)).calculateZOffset(this.getEntityBoundingBox(), z);
+					z = ((AABB) list1.get(k5)).calculateZOffset(this.getEntityBoundingBox(), z);
 				}
 
 				if (z != 0.0D) {
@@ -262,9 +247,9 @@ public abstract class EntityGrenadeBouncyBase extends Entity implements IProject
 			this.collidedVertically = d3 != y;
 			this.onGround = this.collidedVertically && d3 < 0.0D;
 			this.collided = this.collidedHorizontally || this.collidedVertically;
-			int j6 = MathHelper.floor(this.posX);
-			int i1 = MathHelper.floor(this.posY - 0.20000000298023224D);
-			int k6 = MathHelper.floor(this.posZ);
+			int j6 = Math.floor(this.posX);
+			int i1 = Math.floor(this.posY - 0.20000000298023224D);
+			int k6 = Math.floor(this.posZ);
 			BlockPos blockpos = new BlockPos(j6, i1, k6);
 			IBlockState iblockstate = this.world.getBlockState(blockpos);
 

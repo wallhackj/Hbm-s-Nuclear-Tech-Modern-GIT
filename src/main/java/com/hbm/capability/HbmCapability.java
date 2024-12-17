@@ -3,9 +3,15 @@ package com.hbm.capability;
 import java.util.concurrent.Callable;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.main.MainRegistry;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraftforge.common.util.LazyOptional;
 
 public class HbmCapability {
 
@@ -44,17 +50,17 @@ public class HbmCapability {
 					this.enableBackpack = !this.enableBackpack;
 					
 					if(this.enableBackpack)
-						MainRegistry.proxy.displayTooltip(TextFormatting.GREEN + "Jetpack ON");
+						MainRegistry.proxy.displayTooltip(ChatFormatting.GREEN + "Jetpack ON");
 					else
-						MainRegistry.proxy.displayTooltip(TextFormatting.RED + "Jetpack OFF");
+						MainRegistry.proxy.displayTooltip(ChatFormatting.RED + "Jetpack OFF");
 				}
 				if(key == EnumKeybind.TOGGLE_HEAD) {
 					this.enableHUD = !this.enableHUD;
 					
 					if(this.enableHUD)
-						MainRegistry.proxy.displayTooltip(TextFormatting.GREEN + "HUD ON");
+						MainRegistry.proxy.displayTooltip(ChatFormatting.GREEN + "HUD ON");
 					else
-						MainRegistry.proxy.displayTooltip(TextFormatting.RED + "HUD OFF");
+						MainRegistry.proxy.displayTooltip(ChatFormatting.RED + "HUD OFF");
 				}
 			}
 			keysPressed[key.ordinal()] = pressed;
@@ -82,23 +88,21 @@ public class HbmCapability {
 		
 	}
 	
-	public static class HBMDataStorage implements IStorage<IHBMData>{
+	public static class HBMDataStorage {
 
-		@Override
-		public NBTBase writeNBT(Capability<IHBMData> capability, IHBMData instance, EnumFacing side) {
-			NBTTagCompound tag = new NBTTagCompound();
+		public CompoundTag writeNBT(Capability<IHBMData> capability, IHBMData instance, Direction side) {
+			CompoundTag tag = new CompoundTag();
 			for(EnumKeybind key : EnumKeybind.values()){
-				tag.setBoolean(key.name(), instance.getKeyPressed(key));
+				tag.putBoolean(key.name(), instance.getKeyPressed(key));
 			}
-			tag.setBoolean("enableBackpack", instance.getEnableBackpack());
-			tag.setBoolean("enableHUD", instance.getEnableHUD());
+			tag.putBoolean("enableBackpack", instance.getEnableBackpack());
+			tag.putBoolean("enableHUD", instance.getEnableHUD());
 			return tag;
 		}
 
-		@Override
-		public void readNBT(Capability<IHBMData> capability, IHBMData instance, EnumFacing side, NBTBase nbt) {
-			if(nbt instanceof NBTTagCompound){
-				NBTTagCompound tag = (NBTTagCompound)nbt;
+		public void readNBT(Capability<IHBMData> capability, IHBMData instance, Direction side, CompoundTag nbt) {
+			if(nbt instanceof CompoundTag){
+				CompoundTag tag = nbt;
 				for(EnumKeybind key : EnumKeybind.values()){
 					instance.setKeyPressed(key, tag.getBoolean(key.name()));
 				}
@@ -109,7 +113,7 @@ public class HbmCapability {
 		
 	}
 	
-	public static class HBMDataProvider implements ICapabilitySerializable<NBTBase> {
+	public static class HBMDataProvider implements ICapabilitySerializable<CompoundTag> {
 
 		public static final IHBMData DUMMY = new IHBMData(){
 
@@ -140,37 +144,39 @@ public class HbmCapability {
 			public void setEnableHUD(boolean b){
 			}
 		};
+
+		public static final Capability<IHBMData> HBM_CAP = CapabilityManager.get(new CapabilityToken<>() {});
+
+		private final LazyOptional<IHBMData> instance = LazyOptional.of(HBMData::new);
 		
-		@CapabilityInject(IHBMData.class)
-		public static final Capability<IHBMData> HBM_CAP = null;
-		
-		private IHBMData instance = HBM_CAP.getDefaultInstance();
-		
+//		private IHBMData instance = HBM_CAP.getDefaultInstance();
 		@Override
-		public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+		public boolean hasCapability(Capability<?> capability, Direction facing) {
 			return capability == HBM_CAP;
 		}
 
 		@Override
-		public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-			return capability == HBM_CAP ? HBM_CAP.<T>cast(this.instance) : null;
+		public <T> T getCapability(Capability<T> capability, Direction facing) {
+			return capability == HBM_CAP ? instance.cast() : LazyOptional.empty();
 		}
 
 		@Override
-		public NBTBase serializeNBT() {
+		public CompoundTag serializeNBT() {
 			return HBM_CAP.getStorage().writeNBT(HBM_CAP, instance, null);
 		}
 
 		@Override
-		public void deserializeNBT(NBTBase nbt) {
+		public void deserializeNBT(CompoundTag nbt) {
 			HBM_CAP.getStorage().readNBT(HBM_CAP, instance, null, nbt);
 		}
 		
 	}
 	
 	public static IHBMData getData(Entity e){
-		if(e.hasCapability(HBMDataProvider.HBM_CAP, null))
-			return e.getCapability(HBMDataProvider.HBM_CAP, null);
-		return HBMDataProvider.DUMMY;
+//		if(e.hasCapability(HBMDataProvider.HBM_CAP, null))
+//			return e.getCapability(HBMDataProvider.HBM_CAP, null);
+//		return HBMDataProvider.DUMMY;
+		return e.getCapability(HBMDataProvider.HBM_CAP)
+				.orElseThrow(() -> new IllegalStateException("Capability not present!"));
 	}
 }
