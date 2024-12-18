@@ -283,6 +283,7 @@ import com.hbm.tileentity.machine.rbmk.IRBMKFluxReceiver.NType;
 
 import api.hbm.block.IToolable.ToolType;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 public class ModItems {
 
@@ -476,8 +477,8 @@ public class ModItems {
 	public static final Item stamp_titanium_flat = new ItemStamp("stamp_titanium_flat", 96);
 	public static final Item stamp_titanium_plate = new ItemStamp("stamp_titanium_plate", 96);
 	public static final Item stamp_titanium_wire = new ItemStamp("stamp_titanium_wire", 96);
-	public static final Item stamp_titanium_circuit = new Item("stamp_titanium_circuit", 96);
-	public static final Item stamp_obsidian_flat = new Item("stamp_obsidian_flat", 128);
+	public static final Item stamp_titanium_circuit = new ItemStamp("stamp_titanium_circuit", 96);
+	public static final Item stamp_obsidian_flat = new ItemStamp("stamp_obsidian_flat", 128);
 	public static final Item stamp_obsidian_plate = new ItemStamp("stamp_obsidian_plate", 128);
 	public static final Item stamp_obsidian_wire = new ItemStamp("stamp_obsidian_wire", 128);
 	public static final Item stamp_obsidian_circuit = new ItemStamp("stamp_obsidian_circuit", 128);
@@ -1073,12 +1074,6 @@ public class ModItems {
 	public static final Item hs_sword = new ItemSwordCutter(10F, 1F, MainRegistry.matCrucible, "hs_sword").setCreativeTab(MainRegistry.weaponTab);
 	//High frequency sword
 	public static final Item hf_sword = new ItemSwordCutter(15F, 1F, MainRegistry.matCrucible, "hf_sword").setCreativeTab(MainRegistry.weaponTab);
-
-
-
-
-
-
 
 	//Materials
 	public static final Item ingot_steel = new ItemBase("ingot_steel").setCreativeTab(MainRegistry.partsTab);

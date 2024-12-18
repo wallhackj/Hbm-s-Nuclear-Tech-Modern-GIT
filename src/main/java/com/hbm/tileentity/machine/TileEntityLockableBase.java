@@ -7,16 +7,26 @@ import com.hbm.items.tool.ItemTooling;
 import com.hbm.items.tool.ItemKeyPin;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 
 
 public class TileEntityLockableBase extends BlockEntity {
     protected int lock;
     private boolean isLocked = false;
     protected double lockMod = 0.1D;
+
+    public TileEntityLockableBase(BlockEntityType<?> p_155228_, BlockPos p_155229_, BlockState p_155230_) {
+        super(p_155228_, p_155229_, p_155230_);
+    }
 
     public boolean isLocked() {
         return isLocked;
@@ -57,35 +67,36 @@ public class TileEntityLockableBase extends BlockEntity {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound compound) {
-        lock = compound.getInteger("lock");
+    public void readFromNBT(CompoundTag compound) {
+        lock = compound.getInt("lock");
         isLocked = compound.getBoolean("isLocked");
         lockMod = compound.getDouble("lockMod");
         super.readFromNBT(compound);
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        compound.setInteger("lock", lock);
-        compound.setBoolean("isLocked", isLocked);
-        compound.setDouble("lockMod", lockMod);
+    public CompoundTag writeToNBT(CompoundTag compound) {
+        compound.putInt("lock", lock);
+        compound.putBoolean("isLocked", isLocked);
+        compound.putDouble("lockMod", lockMod);
         return super.writeToNBT(compound);
     }
 
-    public boolean canAccess(EntityPlayer player) {
-
+    public boolean canAccess(Player player) {
         if (player == null) { //!isLocked ||
             return false;
         } else {
-            ItemStack stack = player.getHeldItemMainhand();
+            ItemStack stack = player.getMainHandItem();
 
             if (stack.getItem() instanceof ItemKeyPin && ItemKeyPin.getPins(stack) == this.lock) {
-                world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.lockOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                level.playSound(null, player.getX(), player.getY(), player.getZ(), HBMSoundHandler.lockOpen,
+                        SoundSource.BLOCKS, 1.0F, 1.0F);
                 return true;
             }
 
             if (stack.getItem() == ModItems.key_red) {
-                world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.lockOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                level.playSound(null, player.getX(), player.getY(), player.getZ(), HBMSoundHandler.lockOpen,
+                        SoundSource.BLOCKS, 1.0F, 1.0F);
                 return true;
             }
 
@@ -93,9 +104,10 @@ public class TileEntityLockableBase extends BlockEntity {
         }
     }
 
-    public static int hasLockPickTools(EntityPlayer player) {
-        ItemStack stackR = player.getHeldItemMainhand();
-        ItemStack stackL = player.getHeldItemOffhand();
+    public static int hasLockPickTools(Player player) {
+        ItemStack stackR = player.getMainHandItem();
+        ItemStack stackL = player.getOffhandItem();
+
         if (stackR == null || stackL == null) return -1;
         if (stackR.getItem() == ModItems.pin) {
             if (stackL.getItem() instanceof ItemTooling && ((ItemTooling) stackL.getItem()).getType() == ToolType.SCREWDRIVER) {
@@ -116,26 +128,29 @@ public class TileEntityLockableBase extends BlockEntity {
         double chanceOfSuccess = this.lockMod * 100;
 
         if (hand == 1) {
-            player.getHeldItemMainhand().shrink(1);
+            player.getMainHandItem().shrink(1);
             canPick = true;
         } else if (hand == 2) {
-            player.getHeldItemOffhand().shrink(1);
+            player.getOffhandItem().shrink(1);
             canPick = true;
         }
 
         if (canPick) {
 
-            if (ArmorUtil.checkArmorPiece(player, ModItems.jackt, 2) || ArmorUtil.checkArmorPiece(player, ModItems.jackt2, 2))
+            if (ArmorUtil.checkArmorPiece(player, ModItems.jackt, 2) || ArmorUtil.checkArmorPiece(player,
+                    ModItems.jackt2, 2))
                 chanceOfSuccess *= 100D;
 
-            double rand = player.world.rand.nextDouble() * 100;
+            double rand = player.level().random.nextDouble() * 100;
 
             if (chanceOfSuccess > rand) {
-                world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.pinUnlock, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                level.playSound(null, player.getX(), player.getY(), player.getZ(), HBMSoundHandler.pinUnlock,
+                        SoundSource.BLOCKS, 1.0F, 1.0F);
                 return true;
             }
 
-            world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.pinBreak, SoundCategory.BLOCKS, 1.0F, 0.8F + player.world.rand.nextFloat() * 0.2F);
+            level.playSound(null, player.getX(), player.getY(), player.getZ(), HBMSoundHandler.pinBreak,
+                    SoundSource.BLOCKS, 1.0F, 0.8F + player.level().random.nextFloat() * 0.2F);
         }
 
         return false;

@@ -15,6 +15,7 @@ import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import javax.annotation.Nullable;
 
+import com.hbm.capability.EntityHbmPropsProvider;
 import glmath.glm.vec._3.d.Vec3d;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -822,7 +823,6 @@ public class Library {
     //      //  //  //        //    //      //  //      //      //      //    
     ////    //////  /////     //    ////    ////        ////    //  //  //  //
     //      //  //     //     //    //      //  //      //      //  //  //  //
-
     /// ///  //  //  /////     //    //////  //  //      //////  //////  //////
     //Alcater: Huh thats interesing... You can hide from the chopper as long as you are outside 80% of its radius??
     public static LivingEntity getClosestEntityForChopper(Level world, double x, double y, double z, double radius) {
@@ -933,7 +933,7 @@ public class Library {
                     return false;
                 } else if (base.getMetadata() != toTest.getMetadata() && !(base.getMetadata() == OreDictionary.WILDCARD_VALUE)) {
                     return false;
-                } else if (base.getTagCompound() == null && toTest.getTagCompound() != null) {
+                } else if (base.getTag() == null && toTest.getTag() != null) {
                     return false;
                 } else {
                     return (base.getTag() == null || tagContainsOther(base.getTag(), toTest.getTag())) && base.areCapsCompatible(toTest);
@@ -957,12 +957,12 @@ public class Library {
             return true;
         } else if (tester != null && container == null) {
         } else {
-            for (String s : tester.getKeySet()) {
+            for (String s : tester.getAllKeys()) {
                 if (!container.contains(s)) {
                     return false;
                 } else {
-                    NBTBase nbt1 = tester.getTag(s);
-                    NBTBase nbt2 = container.getTag(s);
+                    CompoundTag nbt1 = tester.getCompound(s);
+                    CompoundTag nbt2 = container.getCompound(s);
                     if (nbt1 instanceof CompoundTag && nbt2 instanceof CompoundTag) {
                         if (!tagContainsOther((CompoundTag) nbt1, (CompoundTag) nbt2))
                             return false;

@@ -4,18 +4,17 @@ import java.util.List;
 
 import com.hbm.util.I18nUtil;
 import com.hbm.blocks.ModBlocks;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockState;
 
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockStairs;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
 
 public class BlockGenericStairs extends BlockStairs {
 
-	public BlockGenericStairs(IBlockState modelState, String s) {
+	public BlockGenericStairs(BlockState modelState, String s) {
 		super(modelState);
 		this.setUnlocalizedName(s);
 		this.setRegistryName(s);
@@ -24,7 +23,7 @@ public class BlockGenericStairs extends BlockStairs {
 	}
 
 	@Override
-	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
+	public void addInformation(ItemStack stack, Level player, List<String> tooltip, TooltipFlag advanced) {
 		float hardness = this.getExplosionResistance(null);
 		if(hardness > 50){
 			tooltip.add("§6" + I18nUtil.resolveKey("trait.blastres", hardness));

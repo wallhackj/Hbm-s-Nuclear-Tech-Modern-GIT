@@ -4,11 +4,11 @@ import java.util.List;
 
 import com.hbm.util.I18nUtil;
 import com.hbm.items.ModItems;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
 
 public class ItemDrillbit extends Item {
 
@@ -24,8 +24,8 @@ public class ItemDrillbit extends Item {
 	}
 	
 	
-	@Override
-	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
+//	@Override
+	public void addInformation(ItemStack stack, Level worldIn, List<String> list, TooltipFlag flagIn) {
 		EnumDrillType type = ((ItemDrillbit)stack.getItem()).drillType;
 		if(type == null) return;
 		list.add("§e"+I18nUtil.resolveKey("desc.speed")+" " + ((int) (type.speed * 100)) + "%");

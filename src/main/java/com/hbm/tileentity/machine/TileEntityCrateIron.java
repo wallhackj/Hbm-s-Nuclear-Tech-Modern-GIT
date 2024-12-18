@@ -3,6 +3,7 @@ package com.hbm.tileentity.machine;
 import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemKeyPin;
 import com.hbm.lib.HBMSoundHandler;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -60,8 +61,8 @@ public class TileEntityCrateIron extends TileEntityLockableBase {
 		this.customName = name;
 	}
 	
-	public boolean isUseableByPlayer(EntityPlayer player) {
-		if (world.getTileEntity(pos) != this) {
+	public boolean isUseableByPlayer(Player player) {
+		if (level.getBlockEntity(worldPosition) != this) {
 			return false;
 		} else {
 			return player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64;
@@ -69,15 +70,15 @@ public class TileEntityCrateIron extends TileEntityLockableBase {
 	}
 	
 	@Override
-	public void readFromNBT(NBTTagCompound compound) {
-		if(compound.hasKey("inventory"))
-			inventory.deserializeNBT(compound.getCompoundTag("inventory"));
+	public void readFromNBT(CompoundTag compound) {
+		if(compound.contains("inventory"))
+			inventory.deserializeNBT(compound.getCompound("inventory"));
 		super.readFromNBT(compound);
 	}
 	
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-		compound.setTag("inventory", inventory.serializeNBT());
+	public CompoundTag writeToNBT(CompoundTag compound) {
+		compound.put("inventory", inventory.serializeNBT());
 		return super.writeToNBT(compound);
 	}
 	

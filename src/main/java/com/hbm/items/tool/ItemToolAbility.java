@@ -52,7 +52,6 @@ public class ItemToolAbility extends Item
     protected double movement;
     private List<ToolAbility> breakAbility = new ArrayList<ToolAbility>() {
         private static final long serialVersionUID = 153867601249309418L;
-
         {
             add(null);
         }
@@ -136,7 +135,7 @@ public class ItemToolAbility extends Item
         return this.rarity != Rarity.COMMON ? this.rarity : super.getRarity(stack);
     }
 
-//    @Override
+    //    @Override
     public boolean hitEntity(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         if (!attacker.level().isClientSide && !this.hitAbility.isEmpty() && attacker instanceof Player && canOperate(stack)) {
 
@@ -148,7 +147,7 @@ public class ItemToolAbility extends Item
         return true;
     }
 
-//    @Override
+    //    @Override
     public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, Player player) {
         Level world = player.level();
         BlockState block = world.getBlockState(pos);
@@ -173,7 +172,7 @@ public class ItemToolAbility extends Item
         return super.getDestroySpeed(stack, state);
     }
 
-//    @Override
+    //    @Override
     public boolean canHarvestBlock(BlockState state, ItemStack stack) {
         if (!canOperate(stack)) return false;
 
@@ -275,7 +274,7 @@ public class ItemToolAbility extends Item
         return getCurrentAbility(stack) != null ? true : super.hasEffect(stack);
     }
 
-//    @Override
+    //    @Override
     @OnlyIn(Dist.CLIENT)
     public void addInformation(ItemStack stack, Level worldIn, List<String> list, TooltipFlag flagIn) {
         if (this.breakAbility.size() > 1) {
