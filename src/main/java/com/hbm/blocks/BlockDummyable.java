@@ -4,7 +4,6 @@ import com.hbm.handler.MultiblockHandlerXR;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.InventoryHelper;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -18,7 +17,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
@@ -27,17 +25,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-
 public abstract class BlockDummyable extends Block {
-
     //Drillgon200: I'm far to lazy to figure out what all the meta values should be translated to in properties
     public static final IntegerProperty META = IntegerProperty.create("meta", 0, 15);
 
-    public BlockDummyable(Material m, String s) {
-        super(BlockBehaviour.Properties.of());
+    public BlockDummyable(Properties properties) {
+        super(properties);
         this.registerDefaultState(this.defaultBlockState().setValue(META, 0));
     }
-
     /// BLOCK METADATA ///
 
     //0-5 		dummy rotation 		(for dummy neighbor checks)

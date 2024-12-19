@@ -190,6 +190,7 @@ import com.hbm.blocks.turret.TurretTau;
 import com.hbm.blocks.turret.TurretTauon;
 import com.hbm.items.special.ItemHazard;
 import com.hbm.lib.HBMSoundHandler;
+import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.DoorDecl;
 import net.minecraft.client.resources.model.Material;
@@ -197,11 +198,19 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class ModBlocks {
-
     //present gui id: 126
-    public static List<Block> ALL_BLOCKS = new ArrayList<Block>();
+    public static List<Block> ALL_BLOCKS = new ArrayList<>();
+    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(
+            ForgeRegistries.BLOCKS, RefStrings.MODID);
+
+    public static void register(IEventBus eventBus) {
+        BLOCKS.register(eventBus);
+    }
 
     //public static final Block fatduck = new BlockBase(Material.IRON, "fatduck");
 
@@ -214,7 +223,6 @@ public class ModBlocks {
 //            return SoundEvents.BLOCK_STONE_BREAK;
             return null;
         }
-
     };
 
     public static final Block cheater_virus = new CheaterVirus(BlockBehaviour.Properties.of().strength(1.5F), "cheater_virus").setHardness(Float.POSITIVE_INFINITY).setResistance(Float.POSITIVE_INFINITY).setCreativeTab(null);
@@ -860,7 +868,12 @@ public class ModBlocks {
     public static final int guiID_fritz = 115;
     public static final int guiID_brandon = 116;
 
-    public static final Block turret_chekhov = new TurretChekhov(Material.IRON, "turret_chekhov").setHardness(5.0F).setResistance(600.0F).setCreativeTab(MainRegistry.weaponTab);
+    public static final Block turret_chekhov = new TurretChekhov(
+            BlockBehaviour.Properties.of()
+                    .strength(5.0F, 600.0F)
+                    .requiresCorrectToolForDrops()
+                    .noOcclusion()
+    ).setRegistryName("turret_chekhov").setCreativeTab(MainRegistry.weaponTab);
     public static final Block turret_friendly = new TurretFriendly(Material.IRON, "turret_friendly").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.weaponTab);
     public static final Block turret_jeremy = new TurretJeremy(Material.IRON, "turret_jeremy").setHardness(5.0F).setResistance(600.0F).setCreativeTab(MainRegistry.weaponTab);
     public static final Block turret_tauon = new TurretTauon(Material.IRON, "turret_tauon").setHardness(5.0F).setResistance(600.0F).setCreativeTab(MainRegistry.weaponTab);

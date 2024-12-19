@@ -13,9 +13,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.Ticket;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.common.world.ForgeChunkManager;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.Logger;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockCrate;
@@ -359,23 +365,34 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraft.core.Registry;
 
 @Mod(RefStrings.MODID)
 public class MainRegistry {
 	static {
 		HBMSoundHandler.init();
-		FluidRegistry.enableUniversalBucket();
+//		FluidRegistry.enableUniversalBucket();
 	}
 
-	@SidedProxy(clientSide = RefStrings.CLIENTSIDE, serverSide = RefStrings.SERVERSIDE)
-	public static ServerProxy proxy;
-
-	@Mod(RefStrings.MODID)
 	public static MainRegistry instance;
-
 	public static Logger logger;
-
+	public static final Random rand = new Random();
+	public static final DeferredRegister<BlockEntityType<?>> TILE_ENTITIES = DeferredRegister.create(
+			ForgeRegistries.BLOCK_ENTITY_TYPES, RefStrings.MODID);
 	public static List<FFPipeNetwork> allPipeNetworks = new ArrayList<>();
+
+	public MainRegistry() {
+		IEventBus modEventBus = MinecraftForge.EVENT_BUS;
+		modEventBus.register(this);
+		// Register the Deferred Register to the event bus so blocks and items are registered
+		ModBlocks.register(modEventBus);
+		ModItems.register(modEventBus);
+		TILE_ENTITIES.register(modEventBus);
+
+		// Register the block and item registries to the mod event bus so all blocks and items are registered
+		ModBlocks.register(modEventBus);
+		ModItems.register(modEventBus);
+	}
 
 	// Creative Tabs
 	// ingots, nuggets, wires, machine parts
@@ -470,8 +487,6 @@ public class MainRegistry {
 	public static ToolMaterial matCrucible = EnumHelper.addToolMaterial("CRUCIBLE", 3, 10000, 50.0F, 100.0F, 200);
 	public static ToolMaterial matHS = EnumHelper.addToolMaterial("CRUCIBLE", 3, 10000, 50.0F, 100.0F, 200);
 	public static ToolMaterial matHF = EnumHelper.addToolMaterial("CRUCIBLE", 3, 10000, 50.0F, 100.0F, 200);
-
-	Random rand = new Random();
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {

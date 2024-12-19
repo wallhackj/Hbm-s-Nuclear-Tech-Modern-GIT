@@ -5,7 +5,6 @@ import java.io.File;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.sound.AudioWrapper;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvent;

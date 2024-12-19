@@ -1,6 +1,6 @@
 package com.hbm.interfaces;
 
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 
 public interface IHasCustomModel {
 

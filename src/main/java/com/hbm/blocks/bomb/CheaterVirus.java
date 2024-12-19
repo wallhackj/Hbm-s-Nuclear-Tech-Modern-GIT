@@ -23,8 +23,8 @@ public class CheaterVirus extends Block {
 
 	static boolean protect = true;
 
-	public CheaterVirus(BlockBehaviour materialIn, String s) {
-		super(Properties.copy(materialIn));
+	public CheaterVirus(Properties properties, String s) {
+		super(properties);
 //		this.setUnlocalizedName(s);
 //		this.setRegistryName(s);
 //		this.setTickRandomly(true);
